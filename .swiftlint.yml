@@ -1,0 +1,36 @@
+included:
+  - OpenCaffein
+  - OpenCaffeinTests
+
+file_length:
+  warning: 400
+  error: 500
+
+type_body_length:
+  warning: 250
+  error: 400
+
+function_body_length:
+  warning: 40
+  error: 80
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+
+cyclomatic_complexity:
+  warning: 10
+  error: 15
+
+opt_in_rules:
+  - empty_count
+  - force_unwrapping
+  - explicit_init
+  - first_where
+  - last_where
+  - sorted_imports
+  - redundant_type_annotation
+
+disabled_rules:
+  - trailing_comma

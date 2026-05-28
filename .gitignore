@@ -1,0 +1,16 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+OpenCaffein.xcodeproj/
+*.xcworkspace/
+
+# SPM
+.swiftpm/
+.build/
+Package.resolved
+
+# macOS
+.DS_Store

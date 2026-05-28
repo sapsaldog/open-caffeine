@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+# Blocks a push when logic coverage drops below 100%.
+# Enabled via: git config core.hooksPath Scripts/hooks
+# Bypass once with: git push --no-verify
+exec "$(git rev-parse --show-toplevel)/Scripts/coverage-gate.sh"
