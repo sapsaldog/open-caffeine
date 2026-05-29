@@ -47,6 +47,7 @@ Included:
   - Show icon in dock
   - Show instruction message on first launch
   - Show countdown
+  - Keep the screen on (prevent display sleep; default on)
   - Default duration
   - Allow sleep if battery below threshold
 - About panel (version + credits).
@@ -210,7 +211,8 @@ User clicks menu item
   → CaffeineSession.start(.minutes(30))
       ├─► SleepAssertion.acquire()
       │     └─► IOPMAssertionCreateWithName(
-      │            kIOPMAssertPreventUserIdleSystemSleep, ...)
+      │            kIOPMAssertPreventUserIdleDisplaySleep (default, screen on)
+      │            / …PreventUserIdleSystemSleep when "Keep the screen on" off, ...)
       ├─► Timer.scheduledTimer(every: 1s) → tick
       └─► state = .active(remaining: 1800)
                    │
@@ -321,12 +323,13 @@ counts acquire/release calls.
 - [ ] Start for 5 min → countdown begins at 5:00.
 - [ ] After expiry, icon reverts and sleep works.
 - [ ] Forever → still awake after 30 min idle.
-- [ ] Display Sleep < Caffeine timer → display sleeps but system stays awake (expected).
+- [ ] Forever + "Keep the screen on" ON (default) → screen stays on past the display-sleep timer.
+- [ ] "Keep the screen on" OFF → display sleeps but system stays awake.
 - [ ] Hotkey toggles on/off.
 - [ ] Start-at-login toggle survives reboot.
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers release (use `pmset` simulation if hard to drain).
-- [ ] `pmset -g assertions` shows `PreventUserIdleSystemSleep` entry while active.
+- [ ] `pmset -g assertions` shows `PreventUserIdleDisplaySleep` entry while active (or `…SystemSleep` when "Keep the screen on" is off).
 
 ### CI (optional)
 

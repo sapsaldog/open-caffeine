@@ -95,6 +95,26 @@ final class CaffeineSessionTests: XCTestCase {
         }
         XCTAssertEqual(local.releaseCount, 1)
     }
+
+    func testReapplyWhileIdleIsNoOp() {
+        session.reapplyAssertionIfActive()
+        XCTAssertEqual(assertion.acquireCount, 0)
+        XCTAssertEqual(session.state, .idle)
+    }
+
+    func testReapplyWhileActiveReacquiresInPlace() throws {
+        try session.start(.forever)
+        session.reapplyAssertionIfActive()
+        XCTAssertEqual(assertion.acquireCount, 2)
+        XCTAssertTrue(session.state.isActive)
+    }
+
+    func testReapplyFailureStopsSession() throws {
+        try session.start(.forever)
+        assertion.acquireError = NSError(domain: "test", code: 1)
+        session.reapplyAssertionIfActive()
+        XCTAssertEqual(session.state, .idle)
+    }
 }
 
 /// Test helper: mutable clock you can advance by hand.

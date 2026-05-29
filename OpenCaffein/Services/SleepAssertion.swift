@@ -15,22 +15,25 @@ enum SleepAssertionError: Error {
 /// Seam over the two IOKit power-assertion calls so the acquire/release state
 /// machine is unit-testable. The live implementation lives in `SystemAdapters`.
 protocol PowerAssertionAPI {
-    func create(reason: String, id: inout IOPMAssertionID) -> IOReturn
+    func create(type: String, reason: String, id: inout IOPMAssertionID) -> IOReturn
     func release(id: IOPMAssertionID) -> IOReturn
 }
 
 final class SleepAssertion: SleepAssertionProviding {
     private let log = Logger(subsystem: "com.opencaffein", category: "assertion")
     private let reason: String
+    private let kind: () -> SleepAssertionKind
     private let api: PowerAssertionAPI
     private var assertionID = IOPMAssertionID(0)
     private(set) var isActive = false
 
     init(
         reason: String = "Open Caffein keeping system awake",
+        kind: @escaping () -> SleepAssertionKind = { .displayAndSystem },
         api: PowerAssertionAPI = IOKitPowerAssertionAPI()
     ) {
         self.reason = reason
+        self.kind = kind
         self.api = api
     }
 
@@ -39,7 +42,7 @@ final class SleepAssertion: SleepAssertionProviding {
     func acquire() throws {
         if isActive { release() }
         var newID: IOPMAssertionID = 0
-        let result = api.create(reason: reason, id: &newID)
+        let result = api.create(type: kind().ioKitAssertionType, reason: reason, id: &newID)
         guard result == kIOReturnSuccess else {
             log.error("IOPMAssertionCreateWithName failed: \(result, format: .decimal)")
             throw SleepAssertionError.ioReturnFailure(result)

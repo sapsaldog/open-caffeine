@@ -9,6 +9,7 @@ final class MenuBarController: NSObject {
     private let builder = MenuBuilder()
     private var cancellables: Set<AnyCancellable> = []
     private var refreshTimer: Timer?
+    private var lastKeepDisplayAwake = false
 
     var onPreferences: (() -> Void)?
     var onAbout: (() -> Void)?
@@ -48,10 +49,21 @@ final class MenuBarController: NSObject {
     }
 
     private func observeSettings() {
+        lastKeepDisplayAwake = settings.keepDisplayAwake
         settings.objectWillChange
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.refreshIcon() }
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.refreshIcon()
+                self.reapplyAssertionIfDisplayPreferenceChanged()
+            }
             .store(in: &cancellables)
+    }
+
+    private func reapplyAssertionIfDisplayPreferenceChanged() {
+        guard settings.keepDisplayAwake != lastKeepDisplayAwake else { return }
+        lastKeepDisplayAwake = settings.keepDisplayAwake
+        session.reapplyAssertionIfActive()
     }
 
     private func scheduleTickIfNeeded() {

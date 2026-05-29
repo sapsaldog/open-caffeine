@@ -5,8 +5,8 @@ import XCTest
 final class AppSettingsTests: XCTestCase {
     private let keys = [
         "iconStyle", "startAtLogin", "showIconInDock", "showInstructionMessage",
-        "showCountdown", "defaultDurationSeconds", "sleepBelowBatteryPercent",
-        "didShowInstructionMessage"
+        "showCountdown", "keepDisplayAwake", "defaultDurationSeconds",
+        "sleepBelowBatteryPercent", "didShowInstructionMessage"
     ]
     private var cancellables: Set<AnyCancellable> = []
 
@@ -28,6 +28,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.showIconInDock)
         XCTAssertFalse(settings.showInstructionMessage)
         XCTAssertTrue(settings.showCountdown)
+        XCTAssertTrue(settings.keepDisplayAwake)
         XCTAssertEqual(settings.defaultDurationSeconds, -1)
         XCTAssertEqual(settings.sleepBelowBatteryPercent, 0)
         XCTAssertFalse(settings.didShowInstructionMessage)
@@ -39,6 +40,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showIconInDock = true
         settings.showInstructionMessage = true
         settings.showCountdown = false
+        settings.keepDisplayAwake = false
         settings.sleepBelowBatteryPercent = 20
         settings.didShowInstructionMessage = true
 
@@ -47,6 +49,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(reloaded.showIconInDock)
         XCTAssertTrue(reloaded.showInstructionMessage)
         XCTAssertFalse(reloaded.showCountdown)
+        XCTAssertFalse(reloaded.keepDisplayAwake)
         XCTAssertEqual(reloaded.sleepBelowBatteryPercent, 20)
         XCTAssertTrue(reloaded.didShowInstructionMessage)
     }

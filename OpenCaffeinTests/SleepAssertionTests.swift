@@ -65,6 +65,18 @@ final class SleepAssertionTests: XCTestCase {
         }
         XCTAssertEqual(api.releaseCount, 1)
     }
+
+    func testAcquireUsesDisplayKindByDefault() throws {
+        let api = FakePowerAssertionAPI()
+        try SleepAssertion(api: api).acquire()
+        XCTAssertEqual(api.lastType, kIOPMAssertPreventUserIdleDisplaySleep)
+    }
+
+    func testAcquireUsesSystemOnlyKindWhenRequested() throws {
+        let api = FakePowerAssertionAPI()
+        try SleepAssertion(kind: { .systemOnly }, api: api).acquire()
+        XCTAssertEqual(api.lastType, kIOPMAssertPreventUserIdleSystemSleep)
+    }
 }
 
 final class FakePowerAssertionAPI: PowerAssertionAPI {
@@ -73,9 +85,11 @@ final class FakePowerAssertionAPI: PowerAssertionAPI {
     var assignedID: IOPMAssertionID = 7
     private(set) var createCount = 0
     private(set) var releaseCount = 0
+    private(set) var lastType: String?
 
-    func create(reason: String, id: inout IOPMAssertionID) -> IOReturn {
+    func create(type: String, reason: String, id: inout IOPMAssertionID) -> IOReturn {
         createCount += 1
+        lastType = type
         id = assignedID
         return createResult
     }

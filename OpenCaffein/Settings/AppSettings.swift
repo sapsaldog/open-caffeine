@@ -11,6 +11,7 @@ final class AppSettings: ObservableObject {
         static let showIconInDock = "showIconInDock"
         static let showInstructionMessage = "showInstructionMessage"
         static let showCountdown = "showCountdown"
+        static let keepDisplayAwake = "keepDisplayAwake"
         static let defaultDurationSeconds = "defaultDurationSeconds"
         static let sleepBelowBatteryPercent = "sleepBelowBatteryPercent"
         static let didShowInstructionMessage = "didShowInstructionMessage"
@@ -21,6 +22,8 @@ final class AppSettings: ObservableObject {
     @AppStorage(Key.showIconInDock) var showIconInDock: Bool = false
     @AppStorage(Key.showInstructionMessage) var showInstructionMessage: Bool = false
     @AppStorage(Key.showCountdown) var showCountdown: Bool = true
+    /// When true, also prevents the display from sleeping (the screen stays on).
+    @AppStorage(Key.keepDisplayAwake) var keepDisplayAwake: Bool = true
     /// `-1` means Forever. Other values are seconds.
     @AppStorage(Key.defaultDurationSeconds) var defaultDurationSeconds: Int = -1
     /// `0` means disabled (no automatic stop on low battery).

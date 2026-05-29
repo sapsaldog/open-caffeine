@@ -57,12 +57,14 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 - [ ] Start for 5 min → countdown begins at 5:00 next to icon.
 - [ ] After 5 min, icon reverts and sleep works again.
 - [ ] Forever → still awake after 30 min idle.
-- [ ] Display Sleep < session timer → display sleeps, system stays awake (expected).
+- [ ] Forever + "Keep the screen on" ON (default) → screen stays on past the display-sleep timer.
+- [ ] "Keep the screen on" OFF → display may sleep, but the Mac stays awake.
+- [ ] Toggling "Keep the screen on" during an active session takes effect immediately.
 - [ ] Hotkey toggles caffeine on/off.
 - [ ] Start-at-login toggle survives reboot.
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers stop (use `pmset` if hard to drain).
-- [ ] `pmset -g assertions` shows `PreventUserIdleSystemSleep` while active.
+- [ ] `pmset -g assertions` shows `PreventUserIdleDisplaySleep` while active (or `…SystemSleep` when "Keep the screen on" is off).
 - [ ] About menu shows custom Open Caffein panel.
 - [ ] Screensaver launches from menu.
 - [ ] Custom duration prompt accepts minutes input.

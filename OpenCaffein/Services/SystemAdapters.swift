@@ -11,9 +11,9 @@ import ServiceManagement
 // MARK: - Sleep assertion (IOKit power management)
 
 struct IOKitPowerAssertionAPI: PowerAssertionAPI {
-    func create(reason: String, id: inout IOPMAssertionID) -> IOReturn {
+    func create(type: String, reason: String, id: inout IOPMAssertionID) -> IOReturn {
         IOPMAssertionCreateWithName(
-            kIOPMAssertPreventUserIdleSystemSleep as CFString,
+            type as CFString,
             IOPMAssertionLevel(kIOPMAssertionLevelOn),
             reason as CFString,
             &id

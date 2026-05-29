@@ -6,6 +6,7 @@ struct DurationSettingsView: View {
     var body: some View {
         Form {
             Section {
+                Toggle("Keep the screen on", isOn: $settings.keepDisplayAwake)
                 Toggle("Show countdown", isOn: $settings.showCountdown)
                 Picker("Default duration", selection: defaultDurationBinding) {
                     ForEach(CaffeineDuration.standardPresets, id: \.self) { preset in
@@ -13,6 +14,8 @@ struct DurationSettingsView: View {
                     }
                 }
                 .pickerStyle(.menu)
+            } footer: {
+                Text("When off, the Mac stays awake but the display is allowed to sleep.")
             }
 
             Section("Battery") {

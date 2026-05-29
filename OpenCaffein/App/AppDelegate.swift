@@ -2,9 +2,11 @@ import AppKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let assertion = SleepAssertion()
-    private(set) lazy var session = CaffeineSession(assertion: assertion)
     private let settings = AppSettings.shared
+    private lazy var assertion = SleepAssertion(
+        kind: { [settings] in SleepAssertionKind(keepDisplayAwake: settings.keepDisplayAwake) }
+    )
+    private(set) lazy var session = CaffeineSession(assertion: assertion)
     private let loginItem = LoginItemManager()
     private var menuBar: MenuBarController?
     private var hotKey: HotKeyService?
