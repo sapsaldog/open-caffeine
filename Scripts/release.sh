@@ -20,7 +20,7 @@ if [ -z "$GEN" ]; then
     exit 1
 fi
 
-echo "▸ Building Release v$VERSION…"
+echo "▸ Building Release v${VERSION}…"
 xcodegen generate >/dev/null
 xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Release \
     -derivedDataPath "$REPO/.build/release" build >/dev/null

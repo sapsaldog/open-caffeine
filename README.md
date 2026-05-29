@@ -109,4 +109,4 @@ See [`docs/superpowers/specs/2026-05-28-open-caffeine-design.md`](docs/superpowe
 
 ## License
 
-Personal use.
+[MIT](LICENSE) © Open Caffeine contributors.

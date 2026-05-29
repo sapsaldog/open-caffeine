@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Open Caffeine</title>
+        <item>
+            <title>1.0</title>
+            <pubDate>Thu, 28 May 2026 23:45:27 -0600</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/sapsaldog/open-caffeine/releases/download/v1.0.0/Open-Caffeine-1.0.0.zip" length="3469374" type="application/octet-stream" sparkle:edSignature="Z0vkvdOJUyaF/falu1joLy0gkdcfUQTTxw95yjuz42q2MMHtfrtSofoOEYTaHqQkD1Q6YdlOQFx3WH6c5Y5yCw=="/>
+        </item>
+    </channel>
+</rss>
