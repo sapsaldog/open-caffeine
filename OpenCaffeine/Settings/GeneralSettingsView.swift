@@ -48,13 +48,13 @@ struct GeneralSettingsView: View {
                 SettingsGroupLabel(text: "Startup & Visibility")
                 SettingsGroup {
                     SettingsRow("Start at login", first: true) {
-                        Toggle("", isOn: startAtLoginBinding).labelsHidden()
+                        MacSwitch(isOn: startAtLoginBinding)
                     }
                     SettingsRow("Show icon in Dock") {
-                        Toggle("", isOn: showInDockBinding).labelsHidden()
+                        MacSwitch(isOn: showInDockBinding)
                     }
                     SettingsRow("Show instruction message when Open Caffeine opens") {
-                        Toggle("", isOn: $settings.showInstructionMessage).labelsHidden()
+                        MacSwitch(isOn: $settings.showInstructionMessage)
                     }
                 }
             }

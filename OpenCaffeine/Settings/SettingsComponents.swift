@@ -67,6 +67,30 @@ struct SettingsRow<Control: View>: View {
     }
 }
 
+/// macOS switch matching the design's `.mac-switch` spec (components.css): a
+/// 38×22 pill with a `fill-primary` track that turns accent when on, and an 18pt
+/// white knob that slides 16pt over a .22s curve.
+struct MacSwitch: View {
+    @Binding var isOn: Bool
+    var body: some View {
+        Capsule()
+            .fill(isOn ? Color.accentColor : Color.primary.opacity(0.1))
+            .frame(width: 38, height: 22)
+            .overlay(alignment: .leading) {
+                Circle()
+                    .fill(.white)
+                    .overlay(Circle().strokeBorder(Color.black.opacity(0.04), lineWidth: 0.5))
+                    .frame(width: 18, height: 18)
+                    .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
+                    .padding(.leading, 2)
+                    .offset(x: isOn ? 16 : 0)
+            }
+            .animation(.timingCurve(0.32, 0.72, 0, 1, duration: 0.22), value: isOn)
+            .contentShape(Capsule())
+            .onTapGesture { isOn.toggle() }
+    }
+}
+
 /// macOS-style segmented control (design `.mac-seg`): subtle track, the selected
 /// segment lifts onto a control-colored chip. Each segment's content is supplied
 /// by the caller and told whether it is selected.

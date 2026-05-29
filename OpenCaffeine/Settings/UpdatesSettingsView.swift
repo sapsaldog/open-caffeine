@@ -23,7 +23,7 @@ struct UpdatesSettingsView: View {
                         subtitle: "Open Caffeine checks once a day in the background.",
                         first: true
                     ) {
-                        Toggle("", isOn: $settings.autoCheckUpdates).labelsHidden()
+                        MacSwitch(isOn: $settings.autoCheckUpdates)
                     }
                 }
 

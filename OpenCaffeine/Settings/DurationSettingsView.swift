@@ -13,14 +13,14 @@ struct DurationSettingsView: View {
                         subtitle: "When off, the Mac stays awake but the display is allowed to sleep.",
                         first: true
                     ) {
-                        Toggle("", isOn: $settings.keepDisplayAwake).labelsHidden()
+                        MacSwitch(isOn: $settings.keepDisplayAwake)
                     }
                 }
 
                 SettingsGroupLabel(text: "Countdown")
                 SettingsGroup {
                     SettingsRow("Show countdown next to the menu-bar icon", first: true) {
-                        Toggle("", isOn: $settings.showCountdown).labelsHidden()
+                        MacSwitch(isOn: $settings.showCountdown)
                     }
                     SettingsRow("Default duration", subtitle: "Used when you activate with the hot key.") {
                         Picker("", selection: defaultDurationBinding) {

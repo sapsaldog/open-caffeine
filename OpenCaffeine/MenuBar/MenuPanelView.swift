@@ -31,10 +31,12 @@ struct MenuPanelView: View {
             hero
             durationSection
             screensaverRow
+            keepDisplayAwakeRow
             footer
         }
         .padding(16)
         .frame(width: 320)
+        .toggleStyle(.switch)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22))
         .onAppear { selected = settings.defaultDuration }
         .onReceive(tick) { now = $0 }
@@ -113,17 +115,33 @@ struct MenuPanelView: View {
     private var screensaverRow: some View {
         Button { dismiss(); onScreensaver() } label: {
             HStack(spacing: 10) {
-                Image(systemName: "moon.fill").foregroundStyle(.secondary)
+                Image(systemName: "moon").foregroundStyle(.secondary)
                 Text("Start Screensaver").font(.macControl).foregroundStyle(.primary)
                 Spacer()
             }
             .padding(.horizontal, 12).frame(height: 42)
             .background(RoundedRectangle(cornerRadius: 10).fill(.primary.opacity(0.05)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 0.5)
+            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .focusable(false)
         .padding(.top, 12)
+    }
+
+    private var keepDisplayAwakeRow: some View {
+        HStack {
+            Text("Keep display awake").font(.system(size: 12.5)).foregroundStyle(.secondary)
+            Spacer()
+            MacSwitch(isOn: Binding(
+                get: { settings.keepDisplayAwake },
+                set: { settings.keepDisplayAwake = $0 }
+            ))
+        }
+        .padding(.top, 8)
     }
 
     private var footer: some View {

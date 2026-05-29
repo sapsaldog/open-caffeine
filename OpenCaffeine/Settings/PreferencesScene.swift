@@ -89,6 +89,7 @@ struct PreferencesScene: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .toggleStyle(.switch)
     }
 
     private var appVersion: String {
