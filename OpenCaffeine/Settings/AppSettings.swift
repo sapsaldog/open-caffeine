@@ -13,6 +13,8 @@ final class AppSettings: ObservableObject {
         static let showCountdown = "showCountdown"
         static let keepDisplayAwake = "keepDisplayAwake"
         static let appearanceMode = "appearanceMode"
+        static let autoCheckUpdates = "autoCheckUpdates"
+        static let updateChannel = "updateChannel"
         static let defaultDurationSeconds = "defaultDurationSeconds"
         static let sleepBelowBatteryPercent = "sleepBelowBatteryPercent"
         static let didShowInstructionMessage = "didShowInstructionMessage"
@@ -27,6 +29,9 @@ final class AppSettings: ObservableObject {
     @AppStorage(Key.keepDisplayAwake) var keepDisplayAwake: Bool = true
     /// App appearance override: "auto" (default), "light", or "dark".
     @AppStorage(Key.appearanceMode) var appearanceModeRaw: String = AppearanceMode.auto.rawValue
+    /// Software-update preferences (UI only — no updater backend is wired yet).
+    @AppStorage(Key.autoCheckUpdates) var autoCheckUpdates: Bool = true
+    @AppStorage(Key.updateChannel) var updateChannelRaw: String = UpdateChannel.stable.rawValue
     /// `-1` means Forever. Other values are seconds.
     @AppStorage(Key.defaultDurationSeconds) var defaultDurationSeconds: Int = -1
     /// `0` means disabled (no automatic stop on low battery).
@@ -53,6 +58,11 @@ final class AppSettings: ObservableObject {
     var appearanceMode: AppearanceMode {
         get { AppearanceMode(rawValue: appearanceModeRaw) ?? .auto }
         set { appearanceModeRaw = newValue.rawValue }
+    }
+
+    var updateChannel: UpdateChannel {
+        get { UpdateChannel(rawValue: updateChannelRaw) ?? .stable }
+        set { updateChannelRaw = newValue.rawValue }
     }
 
     /// Round-trips through `defaultDurationSeconds`. Reconstructs canonical

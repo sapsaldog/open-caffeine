@@ -11,8 +11,14 @@ struct PreferencesScene: View {
     @State private var page: PrefPage = .general
 
     enum PrefPage: Hashable {
-        case general, battery
-        var title: String { self == .general ? "General" : "Duration & Battery" }
+        case general, battery, updates
+        var title: String {
+            switch self {
+            case .general: return "General"
+            case .battery: return "Duration & Battery"
+            case .updates: return "Updates"
+            }
+        }
     }
 
     private let topBar: CGFloat = 52
@@ -46,6 +52,8 @@ struct PreferencesScene: View {
                        selected: page == .general) { page = .general }
                 NavRow(title: "Duration & Battery", systemImage: "clock", tint: .indigo,
                        selected: page == .battery) { page = .battery }
+                NavRow(title: "Updates", systemImage: "arrow.down.circle", tint: .green,
+                       selected: page == .updates) { page = .updates }
             }
             .padding(.horizontal, 10)
             Spacer()
@@ -75,6 +83,8 @@ struct PreferencesScene: View {
                 )
             case .battery:
                 DurationSettingsView(settings: settings)
+            case .updates:
+                UpdatesSettingsView(settings: settings)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

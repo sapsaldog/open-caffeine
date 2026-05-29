@@ -5,7 +5,8 @@ import XCTest
 final class AppSettingsTests: XCTestCase {
     private let keys = [
         "iconStyle", "startAtLogin", "showIconInDock", "showInstructionMessage",
-        "showCountdown", "keepDisplayAwake", "appearanceMode", "defaultDurationSeconds",
+        "showCountdown", "keepDisplayAwake", "appearanceMode", "autoCheckUpdates",
+        "updateChannel", "defaultDurationSeconds",
         "sleepBelowBatteryPercent", "didShowInstructionMessage"
     ]
     private var cancellables: Set<AnyCancellable> = []
@@ -30,6 +31,8 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(settings.showCountdown)
         XCTAssertTrue(settings.keepDisplayAwake)
         XCTAssertEqual(settings.appearanceModeRaw, "auto")
+        XCTAssertTrue(settings.autoCheckUpdates)
+        XCTAssertEqual(settings.updateChannelRaw, "stable")
         XCTAssertEqual(settings.defaultDurationSeconds, -1)
         XCTAssertEqual(settings.sleepBelowBatteryPercent, 0)
         XCTAssertFalse(settings.didShowInstructionMessage)
@@ -43,6 +46,8 @@ final class AppSettingsTests: XCTestCase {
         settings.showCountdown = false
         settings.keepDisplayAwake = false
         settings.appearanceModeRaw = "dark"
+        settings.autoCheckUpdates = false
+        settings.updateChannelRaw = "beta"
         settings.sleepBelowBatteryPercent = 20
         settings.didShowInstructionMessage = true
 
@@ -53,6 +58,8 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(reloaded.showCountdown)
         XCTAssertFalse(reloaded.keepDisplayAwake)
         XCTAssertEqual(reloaded.appearanceModeRaw, "dark")
+        XCTAssertFalse(reloaded.autoCheckUpdates)
+        XCTAssertEqual(reloaded.updateChannelRaw, "beta")
         XCTAssertEqual(reloaded.sleepBelowBatteryPercent, 20)
         XCTAssertTrue(reloaded.didShowInstructionMessage)
     }
@@ -83,6 +90,20 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings()
         settings.appearanceModeRaw = "bogus"
         XCTAssertEqual(settings.appearanceMode, .auto)
+    }
+
+    func testUpdateChannelGetAndSet() {
+        let settings = AppSettings()
+        XCTAssertEqual(settings.updateChannel, .stable)
+        settings.updateChannel = .beta
+        XCTAssertEqual(settings.updateChannelRaw, "beta")
+        XCTAssertEqual(settings.updateChannel, .beta)
+    }
+
+    func testUpdateChannelFallsBackOnUnknownRawValue() {
+        let settings = AppSettings()
+        settings.updateChannelRaw = "nope"
+        XCTAssertEqual(settings.updateChannel, .stable)
     }
 
     func testDefaultDurationIsForeverWhenNegative() {

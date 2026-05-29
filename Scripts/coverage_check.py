@@ -36,6 +36,7 @@ EXCLUDE = {
     "OpenCaffeine/Settings/PreferencesScene.swift",
     "OpenCaffeine/Settings/GeneralSettingsView.swift",
     "OpenCaffeine/Settings/DurationSettingsView.swift",
+    "OpenCaffeine/Settings/UpdatesSettingsView.swift",
     "OpenCaffeine/Settings/SettingsComponents.swift",
     "OpenCaffeine/Settings/HotKeyRecorderRow.swift",
     "OpenCaffeine/Settings/PreferencesWindowController.swift",
