@@ -4,7 +4,7 @@ DerivedData/
 *.xcuserstate
 *.xcuserdatad/
 xcuserdata/
-OpenCaffein.xcodeproj/
+OpenCaffeine.xcodeproj/
 *.xcworkspace/
 
 # SPM

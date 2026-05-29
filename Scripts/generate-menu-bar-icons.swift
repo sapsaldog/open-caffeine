@@ -4,7 +4,7 @@ import AppKit
 
 private let rootURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 private let assetURL = rootURL
-    .appendingPathComponent("OpenCaffein")
+    .appendingPathComponent("OpenCaffeine")
     .appendingPathComponent("Resources")
     .appendingPathComponent("Assets.xcassets")
 

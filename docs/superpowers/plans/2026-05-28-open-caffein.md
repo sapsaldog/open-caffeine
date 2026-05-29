@@ -1,14 +1,14 @@
-# Open Caffein Implementation Plan
+# Open Caffeine Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a macOS menubar app called **Open Caffein** that prevents the Mac from sleeping for a user-selected duration, with full feature parity to the original app minus marketing menu items.
+**Goal:** Build a macOS menubar app called **Open Caffeine** that prevents the Mac from sleeping for a user-selected duration, with full feature parity to the original app minus marketing menu items.
 
 **Architecture:** Hybrid SwiftUI + AppKit. `AppDelegate` owns an `NSStatusItem`; a central `CaffeineSession` service holds the single source of truth (`@Published var state`) and wraps `IOPMAssertion`. SwiftUI `Settings` scene provides the Preferences window. Other services (`HotKeyService`, `BatteryMonitor`, `LoginItemManager`, `ScreenSaverLauncher`) plug in around the session.
 
 **Tech Stack:** Swift 5.10, macOS 13+, AppKit (`NSStatusItem`) + SwiftUI (Settings), IOKit (`IOPMAssertion`, `IOPSNotification`), ServiceManagement (`SMAppService`), [`sindresorhus/KeyboardShortcuts`](https://github.com/sindresorhus/KeyboardShortcuts) via SPM, XcodeGen (`project.yml`-driven Xcode project), SwiftLint (Build Phase, 500-line file cap), XCTest.
 
-**Spec:** [`docs/superpowers/specs/2026-05-28-open-caffein-design.md`](../specs/2026-05-28-open-caffein-design.md)
+**Spec:** [`docs/superpowers/specs/2026-05-28-open-caffeine-design.md`](../specs/2026-05-28-open-caffeine-design.md)
 
 ---
 
@@ -23,7 +23,7 @@ brew install xcodegen swiftlint
 Xcode 15+ must be installed. `xcodebuild -version` should print Xcode 15.x or 16.x.
 
 All commands below assume the repo root is the current directory:
-`cd /Users/sapsaldog/workspace/caffein`
+`cd /Users/sapsaldog/workspace/caffeine`
 
 ---
 
@@ -33,9 +33,9 @@ All commands below assume the repo root is the current directory:
 - Create: `project.yml`
 - Create: `.swiftlint.yml`
 - Create: `.gitignore`
-- Create: `OpenCaffein/App/OpenCaffeinApp.swift`
-- Create: `OpenCaffein/App/AppDelegate.swift`
-- Create: `OpenCaffeinTests/PlaceholderTest.swift`
+- Create: `OpenCaffeine/App/OpenCaffeineApp.swift`
+- Create: `OpenCaffeine/App/AppDelegate.swift`
+- Create: `OpenCaffeineTests/PlaceholderTest.swift`
 
 - [ ] **Step 1: Create `.gitignore`**
 
@@ -46,7 +46,7 @@ DerivedData/
 *.xcuserstate
 *.xcuserdatad/
 xcuserdata/
-OpenCaffein.xcodeproj/
+OpenCaffeine.xcodeproj/
 *.xcworkspace/
 
 # SPM
@@ -62,8 +62,8 @@ Package.resolved
 
 ```yaml
 included:
-  - OpenCaffein
-  - OpenCaffeinTests
+  - OpenCaffeine
+  - OpenCaffeineTests
 
 file_length:
   warning: 400
@@ -102,9 +102,9 @@ disabled_rules:
 - [ ] **Step 3: Create `project.yml` for XcodeGen**
 
 ```yaml
-name: OpenCaffein
+name: OpenCaffeine
 options:
-  bundleIdPrefix: com.opencaffein
+  bundleIdPrefix: com.opencaffeine
   deploymentTarget:
     macOS: "13.0"
   createIntermediateGroups: true
@@ -115,7 +115,7 @@ settings:
     SWIFT_VERSION: "5.10"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    PRODUCT_NAME: "Open Caffein"
+    PRODUCT_NAME: "Open Caffeine"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
     DEVELOPMENT_TEAM: ""
@@ -127,17 +127,17 @@ packages:
     from: 2.0.0
 
 targets:
-  OpenCaffein:
+  OpenCaffeine:
     type: application
     platform: macOS
     sources:
-      - path: OpenCaffein
+      - path: OpenCaffeine
     info:
-      path: OpenCaffein/Info.plist
+      path: OpenCaffeine/Info.plist
       properties:
         LSUIElement: true
-        CFBundleName: "Open Caffein"
-        CFBundleDisplayName: "Open Caffein"
+        CFBundleName: "Open Caffeine"
+        CFBundleDisplayName: "Open Caffeine"
         NSHumanReadableCopyright: ""
     dependencies:
       - package: KeyboardShortcuts
@@ -151,37 +151,37 @@ targets:
           fi
         basedOnDependencyAnalysis: false
 
-  OpenCaffeinTests:
+  OpenCaffeineTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: OpenCaffeinTests
+      - path: OpenCaffeineTests
     dependencies:
-      - target: OpenCaffein
+      - target: OpenCaffeine
 
 schemes:
-  OpenCaffein:
+  OpenCaffeine:
     build:
       targets:
-        OpenCaffein: all
-        OpenCaffeinTests: [test]
+        OpenCaffeine: all
+        OpenCaffeineTests: [test]
     test:
       targets:
-        - OpenCaffeinTests
+        - OpenCaffeineTests
     run:
       config: Debug
     archive:
       config: Release
 ```
 
-- [ ] **Step 4: Create minimal `OpenCaffeinApp.swift`**
+- [ ] **Step 4: Create minimal `OpenCaffeineApp.swift`**
 
-`OpenCaffein/App/OpenCaffeinApp.swift`:
+`OpenCaffeine/App/OpenCaffeineApp.swift`:
 ```swift
 import SwiftUI
 
 @main
-struct OpenCaffeinApp: App {
+struct OpenCaffeineApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
@@ -195,7 +195,7 @@ struct OpenCaffeinApp: App {
 
 - [ ] **Step 5: Create minimal `AppDelegate.swift`**
 
-`OpenCaffein/App/AppDelegate.swift`:
+`OpenCaffeine/App/AppDelegate.swift`:
 ```swift
 import AppKit
 
@@ -208,7 +208,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 - [ ] **Step 6: Create placeholder test so the test target compiles**
 
-`OpenCaffeinTests/PlaceholderTest.swift`:
+`OpenCaffeineTests/PlaceholderTest.swift`:
 ```swift
 import XCTest
 
@@ -222,22 +222,22 @@ final class PlaceholderTest: XCTestCase {
 - [ ] **Step 7: Generate the Xcode project**
 
 Run: `xcodegen generate`
-Expected output: `Generated project successfully` and `OpenCaffein.xcodeproj` appears.
+Expected output: `Generated project successfully` and `OpenCaffeine.xcodeproj` appears.
 
 - [ ] **Step 8: Verify it builds**
 
-Run: `xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet`
+Run: `xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet`
 Expected: exit code 0, no errors.
 
 - [ ] **Step 9: Verify tests run**
 
-Run: `xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet`
+Run: `xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet`
 Expected: `Test Suite 'PlaceholderTest' passed`.
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git add project.yml .swiftlint.yml .gitignore OpenCaffein OpenCaffeinTests
+git add project.yml .swiftlint.yml .gitignore OpenCaffeine OpenCaffeineTests
 git commit -m "chore: scaffold Xcode project with XcodeGen + SwiftLint"
 ```
 
@@ -246,23 +246,23 @@ git commit -m "chore: scaffold Xcode project with XcodeGen + SwiftLint"
 ## Task 2: Menubar icon appears
 
 **Files:**
-- Create: `OpenCaffein/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json`
-- Create: `OpenCaffein/Resources/Assets.xcassets/Contents.json`
-- Create: `OpenCaffein/Resources/Assets.xcassets/MenuBarIcon.imageset/Contents.json`
-- Create: `OpenCaffein/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf` *(placeholder; see Step 2)*
-- Modify: `OpenCaffein/App/AppDelegate.swift`
-- Modify: `project.yml` (add Resources to sources — already covered by `path: OpenCaffein`)
+- Create: `OpenCaffeine/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json`
+- Create: `OpenCaffeine/Resources/Assets.xcassets/Contents.json`
+- Create: `OpenCaffeine/Resources/Assets.xcassets/MenuBarIcon.imageset/Contents.json`
+- Create: `OpenCaffeine/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf` *(placeholder; see Step 2)*
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
+- Modify: `project.yml` (add Resources to sources — already covered by `path: OpenCaffeine`)
 
 - [ ] **Step 1: Create the assets catalog skeleton**
 
-`OpenCaffein/Resources/Assets.xcassets/Contents.json`:
+`OpenCaffeine/Resources/Assets.xcassets/Contents.json`:
 ```json
 {
   "info": { "version": 1, "author": "xcode" }
 }
 ```
 
-`OpenCaffein/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json`:
+`OpenCaffeine/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json`:
 ```json
 {
   "images": [],
@@ -270,7 +270,7 @@ git commit -m "chore: scaffold Xcode project with XcodeGen + SwiftLint"
 }
 ```
 
-`OpenCaffein/Resources/Assets.xcassets/MenuBarIcon.imageset/Contents.json`:
+`OpenCaffeine/Resources/Assets.xcassets/MenuBarIcon.imageset/Contents.json`:
 ```json
 {
   "images": [
@@ -294,15 +294,15 @@ svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox=
 <text x="11" y="16" text-anchor="middle" font-size="16" font-family="Helvetica">☕</text>
 </svg>'''
 open("/tmp/coffee.svg","w").write(svg)
-subprocess.run(["rsvg-convert","-f","pdf","-o","OpenCaffein/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf","/tmp/coffee.svg"], check=False)
+subprocess.run(["rsvg-convert","-f","pdf","-o","OpenCaffeine/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf","/tmp/coffee.svg"], check=False)
 PY
 ```
 
-If `rsvg-convert` isn't installed, fall back: open Preview → File → New from Clipboard with any 22×22 black PNG → Export As PDF → save to `OpenCaffein/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf`. Final coffee artwork is replaced in a later task; this is just a working placeholder.
+If `rsvg-convert` isn't installed, fall back: open Preview → File → New from Clipboard with any 22×22 black PNG → Export As PDF → save to `OpenCaffeine/Resources/Assets.xcassets/MenuBarIcon.imageset/coffee.pdf`. Final coffee artwork is replaced in a later task; this is just a working placeholder.
 
 - [ ] **Step 3: Update `AppDelegate.swift` to create a status item**
 
-Replace contents of `OpenCaffein/App/AppDelegate.swift`:
+Replace contents of `OpenCaffeine/App/AppDelegate.swift`:
 ```swift
 import AppKit
 
@@ -313,7 +313,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.image = NSImage(named: "MenuBarIcon")
         item.button?.image?.isTemplate = true
-        item.button?.toolTip = "Open Caffein"
+        item.button?.toolTip = "Open Caffeine"
 
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
@@ -337,16 +337,16 @@ Expected: `Generated project successfully`.
 
 - [ ] **Step 5: Build and run**
 
-Run: `xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet`
+Run: `xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet`
 Expected: exit 0.
 
-Run: `open ./build/Debug/Open\ Caffein.app` *(if build output is elsewhere, use `xcodebuild ... -showBuildSettings | grep TARGET_BUILD_DIR` to locate)*
+Run: `open ./build/Debug/Open\ Caffeine.app` *(if build output is elsewhere, use `xcodebuild ... -showBuildSettings | grep TARGET_BUILD_DIR` to locate)*
 Expected: a coffee icon appears in the menubar. Clicking it shows a menu with "Quit". Quit terminates the app.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add OpenCaffein .swiftlint.yml project.yml
+git add OpenCaffeine .swiftlint.yml project.yml
 git commit -m "feat: show menubar icon with Quit menu"
 ```
 
@@ -355,14 +355,14 @@ git commit -m "feat: show menubar icon with Quit menu"
 ## Task 3: `Duration` model (TDD)
 
 **Files:**
-- Create: `OpenCaffein/Models/Duration.swift`
-- Create: `OpenCaffeinTests/DurationTests.swift`
+- Create: `OpenCaffeine/Models/Duration.swift`
+- Create: `OpenCaffeineTests/DurationTests.swift`
 
 - [ ] **Step 1: Write the failing tests**
 
-`OpenCaffeinTests/DurationTests.swift`:
+`OpenCaffeineTests/DurationTests.swift`:
 ```swift
-@testable import OpenCaffein
+@testable import OpenCaffeine
 import XCTest
 
 final class DurationTests: XCTestCase {
@@ -403,12 +403,12 @@ final class DurationTests: XCTestCase {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet 2>&1 | tail -20`
+Run: `xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet 2>&1 | tail -20`
 Expected: compilation error — `CaffeineDuration` not found.
 
 - [ ] **Step 3: Implement `CaffeineDuration`**
 
-`OpenCaffein/Models/Duration.swift`:
+`OpenCaffeine/Models/Duration.swift`:
 ```swift
 import Foundation
 
@@ -451,14 +451,14 @@ enum CaffeineDuration: Equatable, Hashable {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet
 ```
 Expected: all `DurationTests` pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/Models OpenCaffeinTests/DurationTests.swift
+git add OpenCaffeine/Models OpenCaffeineTests/DurationTests.swift
 git commit -m "feat: add CaffeineDuration model with presets"
 ```
 
@@ -467,11 +467,11 @@ git commit -m "feat: add CaffeineDuration model with presets"
 ## Task 4: `SessionState` model
 
 **Files:**
-- Create: `OpenCaffein/Models/SessionState.swift`
+- Create: `OpenCaffeine/Models/SessionState.swift`
 
 - [ ] **Step 1: Define the enum**
 
-`OpenCaffein/Models/SessionState.swift`:
+`OpenCaffeine/Models/SessionState.swift`:
 ```swift
 import Foundation
 
@@ -499,14 +499,14 @@ enum SessionState: Equatable {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 Expected: exit 0.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add OpenCaffein/Models/SessionState.swift
+git add OpenCaffeine/Models/SessionState.swift
 git commit -m "feat: add SessionState with wall-clock remaining()"
 ```
 
@@ -515,11 +515,11 @@ git commit -m "feat: add SessionState with wall-clock remaining()"
 ## Task 5: `SleepAssertionProviding` protocol + real implementation
 
 **Files:**
-- Create: `OpenCaffein/Services/SleepAssertion.swift`
+- Create: `OpenCaffeine/Services/SleepAssertion.swift`
 
 - [ ] **Step 1: Create protocol + real impl**
 
-`OpenCaffein/Services/SleepAssertion.swift`:
+`OpenCaffeine/Services/SleepAssertion.swift`:
 ```swift
 import Foundation
 import IOKit.pwr_mgt
@@ -536,12 +536,12 @@ enum SleepAssertionError: Error {
 }
 
 final class SleepAssertion: SleepAssertionProviding {
-    private let log = Logger(subsystem: "com.opencaffein", category: "assertion")
+    private let log = Logger(subsystem: "com.opencaffeine", category: "assertion")
     private let reason: String
     private var assertionID: IOPMAssertionID = IOPMAssertionID(0)
     private(set) var isActive = false
 
-    init(reason: String = "Open Caffein keeping system awake") {
+    init(reason: String = "Open Caffeine keeping system awake") {
         self.reason = reason
     }
 
@@ -582,14 +582,14 @@ final class SleepAssertion: SleepAssertionProviding {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 Expected: exit 0.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add OpenCaffein/Services/SleepAssertion.swift
+git add OpenCaffeine/Services/SleepAssertion.swift
 git commit -m "feat: add SleepAssertion wrapping IOPMAssertion"
 ```
 
@@ -598,15 +598,15 @@ git commit -m "feat: add SleepAssertion wrapping IOPMAssertion"
 ## Task 6: `CaffeineSession` with TDD (mock assertion)
 
 **Files:**
-- Create: `OpenCaffein/Services/CaffeineSession.swift`
-- Create: `OpenCaffeinTests/CaffeineSessionTests.swift`
-- Create: `OpenCaffeinTests/Mocks/MockSleepAssertion.swift`
+- Create: `OpenCaffeine/Services/CaffeineSession.swift`
+- Create: `OpenCaffeineTests/CaffeineSessionTests.swift`
+- Create: `OpenCaffeineTests/Mocks/MockSleepAssertion.swift`
 
 - [ ] **Step 1: Write the mock**
 
-`OpenCaffeinTests/Mocks/MockSleepAssertion.swift`:
+`OpenCaffeineTests/Mocks/MockSleepAssertion.swift`:
 ```swift
-@testable import OpenCaffein
+@testable import OpenCaffeine
 import Foundation
 
 final class MockSleepAssertion: SleepAssertionProviding {
@@ -632,9 +632,9 @@ final class MockSleepAssertion: SleepAssertionProviding {
 
 - [ ] **Step 2: Write the failing tests**
 
-`OpenCaffeinTests/CaffeineSessionTests.swift`:
+`OpenCaffeineTests/CaffeineSessionTests.swift`:
 ```swift
-@testable import OpenCaffein
+@testable import OpenCaffeine
 import Combine
 import XCTest
 
@@ -723,13 +723,13 @@ final class MutableClock {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet 2>&1 | tail -30
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet 2>&1 | tail -30
 ```
 Expected: compile errors — `CaffeineSession` not defined.
 
 - [ ] **Step 4: Implement `CaffeineSession`**
 
-`OpenCaffein/Services/CaffeineSession.swift`:
+`OpenCaffeine/Services/CaffeineSession.swift`:
 ```swift
 import Combine
 import Foundation
@@ -740,7 +740,7 @@ final class CaffeineSession: ObservableObject {
 
     private let assertion: SleepAssertionProviding
     private let clock: () -> Date
-    private let log = Logger(subsystem: "com.opencaffein", category: "session")
+    private let log = Logger(subsystem: "com.opencaffeine", category: "session")
     private var expiryTimer: Timer?
 
     enum StopReason {
@@ -790,14 +790,14 @@ final class CaffeineSession: ObservableObject {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet
 ```
 Expected: all `CaffeineSessionTests` pass.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add OpenCaffein/Services/CaffeineSession.swift OpenCaffeinTests
+git add OpenCaffeine/Services/CaffeineSession.swift OpenCaffeineTests
 git commit -m "feat: add CaffeineSession with TDD coverage"
 ```
 
@@ -806,14 +806,14 @@ git commit -m "feat: add CaffeineSession with TDD coverage"
 ## Task 7: `CountdownFormatter` (TDD)
 
 **Files:**
-- Create: `OpenCaffein/MenuBar/CountdownFormatter.swift`
-- Create: `OpenCaffeinTests/CountdownFormatterTests.swift`
+- Create: `OpenCaffeine/MenuBar/CountdownFormatter.swift`
+- Create: `OpenCaffeineTests/CountdownFormatterTests.swift`
 
 - [ ] **Step 1: Write the failing tests**
 
-`OpenCaffeinTests/CountdownFormatterTests.swift`:
+`OpenCaffeineTests/CountdownFormatterTests.swift`:
 ```swift
-@testable import OpenCaffein
+@testable import OpenCaffeine
 import XCTest
 
 final class CountdownFormatterTests: XCTestCase {
@@ -843,13 +843,13 @@ final class CountdownFormatterTests: XCTestCase {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet 2>&1 | tail -10
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet 2>&1 | tail -10
 ```
 Expected: `CountdownFormatter` not defined.
 
 - [ ] **Step 3: Implement**
 
-`OpenCaffein/MenuBar/CountdownFormatter.swift`:
+`OpenCaffeine/MenuBar/CountdownFormatter.swift`:
 ```swift
 import Foundation
 
@@ -872,14 +872,14 @@ enum CountdownFormatter {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet
 ```
 Expected: all `CountdownFormatterTests` pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/MenuBar OpenCaffeinTests/CountdownFormatterTests.swift
+git add OpenCaffeine/MenuBar OpenCaffeineTests/CountdownFormatterTests.swift
 git commit -m "feat: add CountdownFormatter with TDD coverage"
 ```
 
@@ -888,12 +888,12 @@ git commit -m "feat: add CountdownFormatter with TDD coverage"
 ## Task 8: `AppSettings` with `@AppStorage`
 
 **Files:**
-- Create: `OpenCaffein/Settings/AppSettings.swift`
-- Create: `OpenCaffein/Models/MenuBarIconStyle.swift`
+- Create: `OpenCaffeine/Settings/AppSettings.swift`
+- Create: `OpenCaffeine/Models/MenuBarIconStyle.swift`
 
 - [ ] **Step 1: Add the icon style enum**
 
-`OpenCaffein/Models/MenuBarIconStyle.swift`:
+`OpenCaffeine/Models/MenuBarIconStyle.swift`:
 ```swift
 import Foundation
 
@@ -927,7 +927,7 @@ enum MenuBarIconStyle: String, CaseIterable, Identifiable {
 
 - [ ] **Step 2: Add the settings store**
 
-`OpenCaffein/Settings/AppSettings.swift`:
+`OpenCaffeine/Settings/AppSettings.swift`:
 ```swift
 import Combine
 import Foundation
@@ -979,14 +979,14 @@ final class AppSettings: ObservableObject {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 Expected: exit 0.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Settings OpenCaffein/Models/MenuBarIconStyle.swift
+git add OpenCaffeine/Settings OpenCaffeine/Models/MenuBarIconStyle.swift
 git commit -m "feat: add AppSettings store and MenuBarIconStyle"
 ```
 
@@ -995,13 +995,13 @@ git commit -m "feat: add AppSettings store and MenuBarIconStyle"
 ## Task 9: `MenuBuilder` + `MenuBarController`
 
 **Files:**
-- Create: `OpenCaffein/MenuBar/MenuBuilder.swift`
-- Create: `OpenCaffein/MenuBar/MenuBarController.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/MenuBar/MenuBuilder.swift`
+- Create: `OpenCaffeine/MenuBar/MenuBarController.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement `MenuBuilder`**
 
-`OpenCaffein/MenuBar/MenuBuilder.swift`:
+`OpenCaffeine/MenuBar/MenuBuilder.swift`:
 ```swift
 import AppKit
 
@@ -1025,7 +1025,7 @@ final class MenuBuilder {
         menu.addItem(makeItem(title: "Start Screensaver", action: screensaverAction))
         menu.addItem(makeItem(title: "Preferences…", action: preferencesAction, key: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeItem(title: "About Open Caffein", action: aboutAction))
+        menu.addItem(makeItem(title: "About Open Caffeine", action: aboutAction))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(makeItem(title: "Quit", action: quitAction, key: "q"))
         return menu
@@ -1058,7 +1058,7 @@ final class MenuBuilder {
 
 - [ ] **Step 2: Implement `MenuBarController`**
 
-`OpenCaffein/MenuBar/MenuBarController.swift`:
+`OpenCaffeine/MenuBar/MenuBarController.swift`:
 ```swift
 import AppKit
 import Combine
@@ -1160,7 +1160,7 @@ final class MenuBarController: NSObject {
 
 - [ ] **Step 3: Wire it up in `AppDelegate`**
 
-Replace `OpenCaffein/App/AppDelegate.swift`:
+Replace `OpenCaffeine/App/AppDelegate.swift`:
 ```swift
 import AppKit
 
@@ -1190,16 +1190,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
-Then launch from `~/Library/Developer/Xcode/DerivedData/.../Build/Products/Debug/Open Caffein.app`.
+Then launch from `~/Library/Developer/Xcode/DerivedData/.../Build/Products/Debug/Open Caffeine.app`.
 
-Expected: clicking the menubar icon shows `Start Caffeine for ▶`, `Start Screensaver`, `Preferences…`, `About Open Caffein`, `Quit`. Hovering `Start Caffeine for` shows preset durations. Clicking "5 min" makes the icon switch to active (placeholder asset for now) and the countdown appears next to the icon. After 5 minutes it auto-stops. Quit terminates.
+Expected: clicking the menubar icon shows `Start Caffeine for ▶`, `Start Screensaver`, `Preferences…`, `About Open Caffeine`, `Quit`. Hovering `Start Caffeine for` shows preset durations. Clicking "5 min" makes the icon switch to active (placeholder asset for now) and the countdown appears next to the icon. After 5 minutes it auto-stops. Quit terminates.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/App OpenCaffein/MenuBar
+git add OpenCaffeine/App OpenCaffeine/MenuBar
 git commit -m "feat: wire menubar menu to CaffeineSession"
 ```
 
@@ -1208,13 +1208,13 @@ git commit -m "feat: wire menubar menu to CaffeineSession"
 ## Task 10: `PreferencesScene` + `GeneralSettingsView`
 
 **Files:**
-- Create: `OpenCaffein/Settings/PreferencesScene.swift`
-- Create: `OpenCaffein/Settings/GeneralSettingsView.swift`
-- Modify: `OpenCaffein/App/OpenCaffeinApp.swift`
+- Create: `OpenCaffeine/Settings/PreferencesScene.swift`
+- Create: `OpenCaffeine/Settings/GeneralSettingsView.swift`
+- Modify: `OpenCaffeine/App/OpenCaffeineApp.swift`
 
 - [ ] **Step 1: Implement `PreferencesScene`**
 
-`OpenCaffein/Settings/PreferencesScene.swift`:
+`OpenCaffeine/Settings/PreferencesScene.swift`:
 ```swift
 import SwiftUI
 
@@ -1233,7 +1233,7 @@ struct PreferencesScene: View {
 
 - [ ] **Step 2: Implement `GeneralSettingsView` (Appearance + toggles)**
 
-`OpenCaffein/Settings/GeneralSettingsView.swift`:
+`OpenCaffeine/Settings/GeneralSettingsView.swift`:
 ```swift
 import SwiftUI
 
@@ -1254,7 +1254,7 @@ struct GeneralSettingsView: View {
             Section {
                 Toggle("Start at login", isOn: $settings.startAtLogin)
                 Toggle("Show icon in dock", isOn: $settings.showIconInDock)
-                Toggle("Show instruction message when Open Caffein opens",
+                Toggle("Show instruction message when Open Caffeine opens",
                        isOn: $settings.showInstructionMessage)
             }
         }
@@ -1273,12 +1273,12 @@ struct GeneralSettingsView: View {
 
 - [ ] **Step 3: Mount the new scene**
 
-Replace `OpenCaffein/App/OpenCaffeinApp.swift`:
+Replace `OpenCaffeine/App/OpenCaffeineApp.swift`:
 ```swift
 import SwiftUI
 
 @main
-struct OpenCaffeinApp: App {
+struct OpenCaffeineApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
@@ -1293,7 +1293,7 @@ struct OpenCaffeinApp: App {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Launch the app, click menubar → Preferences. Expected: window opens showing the General tab with appearance picker and three toggles. The appearance picker shows three coffee-type options.
@@ -1301,7 +1301,7 @@ Launch the app, click menubar → Preferences. Expected: window opens showing th
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/App/OpenCaffeinApp.swift OpenCaffein/Settings
+git add OpenCaffeine/App/OpenCaffeineApp.swift OpenCaffeine/Settings
 git commit -m "feat: add Preferences window with General tab"
 ```
 
@@ -1310,13 +1310,13 @@ git commit -m "feat: add Preferences window with General tab"
 ## Task 11: `LoginItemManager` (Start at login)
 
 **Files:**
-- Create: `OpenCaffein/Services/LoginItemManager.swift`
-- Modify: `OpenCaffein/Settings/GeneralSettingsView.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/Services/LoginItemManager.swift`
+- Modify: `OpenCaffeine/Settings/GeneralSettingsView.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement the manager**
 
-`OpenCaffein/Services/LoginItemManager.swift`:
+`OpenCaffeine/Services/LoginItemManager.swift`:
 ```swift
 import Foundation
 import ServiceManagement
@@ -1324,7 +1324,7 @@ import os.log
 
 @MainActor
 final class LoginItemManager {
-    private let log = Logger(subsystem: "com.opencaffein", category: "loginitem")
+    private let log = Logger(subsystem: "com.opencaffeine", category: "loginitem")
     private let service: SMAppService
 
     init(service: SMAppService = .mainApp) {
@@ -1351,7 +1351,7 @@ final class LoginItemManager {
 
 - [ ] **Step 2: Sync on toggle from `GeneralSettingsView`**
 
-In `OpenCaffein/Settings/GeneralSettingsView.swift`, replace the `Toggle("Start at login"...)` line and add a manager:
+In `OpenCaffeine/Settings/GeneralSettingsView.swift`, replace the `Toggle("Start at login"...)` line and add a manager:
 
 ```swift
 struct GeneralSettingsView: View {
@@ -1365,7 +1365,7 @@ struct GeneralSettingsView: View {
             Section {
                 Toggle("Start at login", isOn: startAtLoginBinding)
                 Toggle("Show icon in dock", isOn: $settings.showIconInDock)
-                Toggle("Show instruction message when Open Caffein opens",
+                Toggle("Show instruction message when Open Caffeine opens",
                        isOn: $settings.showInstructionMessage)
             }
         }
@@ -1420,15 +1420,15 @@ loginItem.sync(enabled: settings.startAtLogin)
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
-Manually: open Preferences → toggle "Start at login" on → run `osascript -e 'tell application "System Events" to get the name of every login item'` (or check System Settings → General → Login Items). Expected: "Open Caffein" appears. Toggle off, re-check.
+Manually: open Preferences → toggle "Start at login" on → run `osascript -e 'tell application "System Events" to get the name of every login item'` (or check System Settings → General → Login Items). Expected: "Open Caffeine" appears. Toggle off, re-check.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/Services/LoginItemManager.swift OpenCaffein/Settings OpenCaffein/App/AppDelegate.swift
+git add OpenCaffeine/Services/LoginItemManager.swift OpenCaffeine/Settings OpenCaffeine/App/AppDelegate.swift
 git commit -m "feat: wire Start at login via SMAppService"
 ```
 
@@ -1437,8 +1437,8 @@ git commit -m "feat: wire Start at login via SMAppService"
 ## Task 12: Show icon in dock (LSUIElement runtime toggle)
 
 **Files:**
-- Modify: `OpenCaffein/App/AppDelegate.swift`
-- Modify: `OpenCaffein/Settings/GeneralSettingsView.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
+- Modify: `OpenCaffeine/Settings/GeneralSettingsView.swift`
 
 - [ ] **Step 1: Add an activation helper to `AppDelegate`**
 
@@ -1500,10 +1500,10 @@ struct PreferencesScene: View {
 }
 ```
 
-In `OpenCaffeinApp.swift`, capture the delegate:
+In `OpenCaffeineApp.swift`, capture the delegate:
 ```swift
 @main
-struct OpenCaffeinApp: App {
+struct OpenCaffeineApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
@@ -1520,7 +1520,7 @@ struct OpenCaffeinApp: App {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Toggle "Show icon in dock" on/off — expect the Dock icon to appear/disappear instantly.
@@ -1528,7 +1528,7 @@ Toggle "Show icon in dock" on/off — expect the Dock icon to appear/disappear i
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/App OpenCaffein/Settings
+git add OpenCaffeine/App OpenCaffeine/Settings
 git commit -m "feat: toggle dock icon via activation policy"
 ```
 
@@ -1537,7 +1537,7 @@ git commit -m "feat: toggle dock icon via activation policy"
 ## Task 13: Real coffee icons (3 styles, idle + active)
 
 **Files:**
-- Create: 6 `.pdf` files under `OpenCaffein/Resources/Assets.xcassets/`
+- Create: 6 `.pdf` files under `OpenCaffeine/Resources/Assets.xcassets/`
 - Create: 5 new `imageset/Contents.json` files
 
 For each style, you need:
@@ -1574,7 +1574,7 @@ Repeat for `MenuBarIconActive`, `MenuBarIcon2`, `MenuBarIcon2Active`, `MenuBarIc
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Manually: open Preferences → switch Appearance between Coffee Type 1/2/3 → expect the menubar icon to change immediately. Start a session → expect the "Active" variant of the current style.
@@ -1590,7 +1590,7 @@ settings.objectWillChange
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Resources OpenCaffein/MenuBar/MenuBarController.swift
+git add OpenCaffeine/Resources OpenCaffeine/MenuBar/MenuBarController.swift
 git commit -m "feat: add coffee icon styles 1-3 with active variants"
 ```
 
@@ -1599,12 +1599,12 @@ git commit -m "feat: add coffee icon styles 1-3 with active variants"
 ## Task 14: `DurationSettingsView` (default duration + countdown toggle + battery placeholder)
 
 **Files:**
-- Create: `OpenCaffein/Settings/DurationSettingsView.swift`
-- Modify: `OpenCaffein/Settings/PreferencesScene.swift`
+- Create: `OpenCaffeine/Settings/DurationSettingsView.swift`
+- Modify: `OpenCaffeine/Settings/PreferencesScene.swift`
 
 - [ ] **Step 1: Implement the view**
 
-`OpenCaffein/Settings/DurationSettingsView.swift`:
+`OpenCaffeine/Settings/DurationSettingsView.swift`:
 ```swift
 import SwiftUI
 
@@ -1694,7 +1694,7 @@ struct PreferencesScene: View {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Open Preferences → second tab "Duration & Battery". Expected: countdown toggle, default duration picker (with all standard presets), battery slider showing "Disabled" at 0.
@@ -1702,7 +1702,7 @@ Open Preferences → second tab "Duration & Battery". Expected: countdown toggle
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Settings
+git add OpenCaffeine/Settings
 git commit -m "feat: add Duration & Battery preferences tab"
 ```
 
@@ -1711,12 +1711,12 @@ git commit -m "feat: add Duration & Battery preferences tab"
 ## Task 15: Custom duration dialog
 
 **Files:**
-- Create: `OpenCaffein/MenuBar/CustomDurationPrompt.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/MenuBar/CustomDurationPrompt.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement a simple NSAlert-based prompt**
 
-`OpenCaffein/MenuBar/CustomDurationPrompt.swift`:
+`OpenCaffeine/MenuBar/CustomDurationPrompt.swift`:
 ```swift
 import AppKit
 
@@ -1725,7 +1725,7 @@ enum CustomDurationPrompt {
     static func ask() -> CaffeineDuration? {
         let alert = NSAlert()
         alert.messageText = "Custom Duration"
-        alert.informativeText = "How many minutes should Open Caffein keep your Mac awake?"
+        alert.informativeText = "How many minutes should Open Caffeine keep your Mac awake?"
         alert.addButton(withTitle: "Start")
         alert.addButton(withTitle: "Cancel")
 
@@ -1758,7 +1758,7 @@ controller.onCustomDurationRequested = { [weak self] in
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Click menubar → Start Caffeine for → Custom… → enter `2` → Start. Expected: session starts for 2 minutes.
@@ -1766,7 +1766,7 @@ Click menubar → Start Caffeine for → Custom… → enter `2` → Start. Expe
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/MenuBar/CustomDurationPrompt.swift OpenCaffein/App/AppDelegate.swift
+git add OpenCaffeine/MenuBar/CustomDurationPrompt.swift OpenCaffeine/App/AppDelegate.swift
 git commit -m "feat: prompt for custom duration"
 ```
 
@@ -1775,12 +1775,12 @@ git commit -m "feat: prompt for custom duration"
 ## Task 16: `HotKeyService` with KeyboardShortcuts
 
 **Files:**
-- Create: `OpenCaffein/Services/HotKeyService.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/Services/HotKeyService.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement the service**
 
-`OpenCaffein/Services/HotKeyService.swift`:
+`OpenCaffeine/Services/HotKeyService.swift`:
 ```swift
 import Foundation
 import KeyboardShortcuts
@@ -1829,7 +1829,7 @@ private var hotKey: HotKeyService?
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 No hotkey is configured yet; this will be addressed in the next task. Build should succeed.
@@ -1837,7 +1837,7 @@ No hotkey is configured yet; this will be addressed in the next task. Build shou
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Services/HotKeyService.swift OpenCaffein/App/AppDelegate.swift
+git add OpenCaffeine/Services/HotKeyService.swift OpenCaffeine/App/AppDelegate.swift
 git commit -m "feat: add HotKeyService backed by KeyboardShortcuts"
 ```
 
@@ -1846,12 +1846,12 @@ git commit -m "feat: add HotKeyService backed by KeyboardShortcuts"
 ## Task 17: Hotkey recorder UI in Preferences
 
 **Files:**
-- Create: `OpenCaffein/Settings/HotKeyRecorderRow.swift`
-- Modify: `OpenCaffein/Settings/GeneralSettingsView.swift`
+- Create: `OpenCaffeine/Settings/HotKeyRecorderRow.swift`
+- Modify: `OpenCaffeine/Settings/GeneralSettingsView.swift`
 
 - [ ] **Step 1: Implement the recorder row**
 
-`OpenCaffein/Settings/HotKeyRecorderRow.swift`:
+`OpenCaffeine/Settings/HotKeyRecorderRow.swift`:
 ```swift
 import KeyboardShortcuts
 import SwiftUI
@@ -1880,7 +1880,7 @@ Section {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Open Preferences → General → click the recorder field → press `⌘⌥C`. Close Preferences, press `⌘⌥C` from any app. Expected: caffeine session starts. Press again to stop.
@@ -1888,7 +1888,7 @@ Open Preferences → General → click the recorder field → press `⌘⌥C`. C
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Settings
+git add OpenCaffeine/Settings
 git commit -m "feat: add hotkey recorder to Preferences"
 ```
 
@@ -1897,8 +1897,8 @@ git commit -m "feat: add hotkey recorder to Preferences"
 ## Task 18: `BatteryMonitor` (TDD)
 
 **Files:**
-- Create: `OpenCaffein/Services/BatteryMonitor.swift`
-- Create: `OpenCaffeinTests/BatteryMonitorTests.swift`
+- Create: `OpenCaffeine/Services/BatteryMonitor.swift`
+- Create: `OpenCaffeineTests/BatteryMonitorTests.swift`
 
 The monitor is split into two layers so the threshold logic can be tested without IOKit:
 
@@ -1907,9 +1907,9 @@ The monitor is split into two layers so the threshold logic can be tested withou
 
 - [ ] **Step 1: Write failing tests**
 
-`OpenCaffeinTests/BatteryMonitorTests.swift`:
+`OpenCaffeineTests/BatteryMonitorTests.swift`:
 ```swift
-@testable import OpenCaffein
+@testable import OpenCaffeine
 import XCTest
 
 final class BatteryMonitorTests: XCTestCase {
@@ -1963,13 +1963,13 @@ final class FakeBatteryProvider: BatteryProvider {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet 2>&1 | tail -20
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet 2>&1 | tail -20
 ```
 Expected: `BatteryMonitor` / `BatteryProvider` not defined.
 
 - [ ] **Step 3: Implement**
 
-`OpenCaffein/Services/BatteryMonitor.swift`:
+`OpenCaffeine/Services/BatteryMonitor.swift`:
 ```swift
 import Foundation
 import IOKit.ps
@@ -1997,7 +1997,7 @@ struct SystemBatteryProvider: BatteryProvider {
 }
 
 final class BatteryMonitor {
-    private let log = Logger(subsystem: "com.opencaffein", category: "battery")
+    private let log = Logger(subsystem: "com.opencaffeine", category: "battery")
     private let provider: BatteryProvider
     private let threshold: () -> Int
     private let onLow: () -> Void
@@ -2048,7 +2048,7 @@ final class BatteryMonitor {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test -quiet
 ```
 Expected: `BatteryMonitorTests` all pass.
 
@@ -2072,7 +2072,7 @@ private var batteryMonitor: BatteryMonitor?
 - [ ] **Step 6: Commit**
 
 ```bash
-git add OpenCaffein/Services/BatteryMonitor.swift OpenCaffein/App/AppDelegate.swift OpenCaffeinTests
+git add OpenCaffeine/Services/BatteryMonitor.swift OpenCaffeine/App/AppDelegate.swift OpenCaffeineTests
 git commit -m "feat: add BatteryMonitor with TDD coverage"
 ```
 
@@ -2081,7 +2081,7 @@ git commit -m "feat: add BatteryMonitor with TDD coverage"
 ## Task 19: Battery row reflects "No battery detected"
 
 **Files:**
-- Modify: `OpenCaffein/Settings/DurationSettingsView.swift`
+- Modify: `OpenCaffeine/Settings/DurationSettingsView.swift`
 
 - [ ] **Step 1: Detect battery at row level**
 
@@ -2128,7 +2128,7 @@ private struct BatteryThresholdRow: View {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 On a MacBook, expected: slider enabled, label shows "Disabled" / `XX%`. On a desktop Mac (or after unplugging battery in simulator-like setups), the slider is disabled and "No battery detected" appears in red.
@@ -2136,7 +2136,7 @@ On a MacBook, expected: slider enabled, label shows "Disabled" / `XX%`. On a des
 - [ ] **Step 3: Commit**
 
 ```bash
-git add OpenCaffein/Settings/DurationSettingsView.swift
+git add OpenCaffeine/Settings/DurationSettingsView.swift
 git commit -m "feat: disable battery slider when no battery present"
 ```
 
@@ -2145,19 +2145,19 @@ git commit -m "feat: disable battery slider when no battery present"
 ## Task 20: `ScreenSaverLauncher`
 
 **Files:**
-- Create: `OpenCaffein/Services/ScreenSaverLauncher.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/Services/ScreenSaverLauncher.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement the launcher**
 
-`OpenCaffein/Services/ScreenSaverLauncher.swift`:
+`OpenCaffeine/Services/ScreenSaverLauncher.swift`:
 ```swift
 import AppKit
 import os.log
 
 @MainActor
 enum ScreenSaverLauncher {
-    private static let log = Logger(subsystem: "com.opencaffein", category: "screensaver")
+    private static let log = Logger(subsystem: "com.opencaffeine", category: "screensaver")
 
     static func launch() {
         let url = URL(
@@ -2183,7 +2183,7 @@ controller.onStartScreensaver = { ScreenSaverLauncher.launch() }
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
 Menubar → Start Screensaver. Expected: the system screensaver starts immediately.
@@ -2191,7 +2191,7 @@ Menubar → Start Screensaver. Expected: the system screensaver starts immediate
 - [ ] **Step 4: Commit**
 
 ```bash
-git add OpenCaffein/Services/ScreenSaverLauncher.swift OpenCaffein/App/AppDelegate.swift
+git add OpenCaffeine/Services/ScreenSaverLauncher.swift OpenCaffeine/App/AppDelegate.swift
 git commit -m "feat: launch ScreenSaverEngine from menu"
 ```
 
@@ -2200,12 +2200,12 @@ git commit -m "feat: launch ScreenSaverEngine from menu"
 ## Task 21: About panel + first-launch instruction message
 
 **Files:**
-- Create: `OpenCaffein/Resources/AboutPanel.swift`
-- Modify: `OpenCaffein/App/AppDelegate.swift`
+- Create: `OpenCaffeine/Resources/AboutPanel.swift`
+- Modify: `OpenCaffeine/App/AppDelegate.swift`
 
 - [ ] **Step 1: Implement a custom About panel**
 
-`OpenCaffein/Resources/AboutPanel.swift`:
+`OpenCaffeine/Resources/AboutPanel.swift`:
 ```swift
 import AppKit
 
@@ -2218,7 +2218,7 @@ enum AboutPanel {
             attributes: [.foregroundColor: NSColor.labelColor]
         )
         NSApp.orderFrontStandardAboutPanel(options: [
-            .applicationName: "Open Caffein",
+            .applicationName: "Open Caffeine",
             .applicationVersion: version,
             .credits: credits
         ])
@@ -2239,7 +2239,7 @@ Append at the end of `applicationDidFinishLaunching`:
 ```swift
 if settings.showInstructionMessage, !settings.didShowInstructionMessage {
     let alert = NSAlert()
-    alert.messageText = "Open Caffein is running in your menubar"
+    alert.messageText = "Open Caffeine is running in your menubar"
     alert.informativeText = """
     Click the coffee icon to start a session.
     Set a hotkey in Preferences for one-press toggle.
@@ -2254,15 +2254,15 @@ if settings.showInstructionMessage, !settings.didShowInstructionMessage {
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Debug build -quiet
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Debug build -quiet
 ```
 
-Toggle "Show instruction message" on, delete the app's defaults (`defaults delete com.opencaffein.OpenCaffein didShowInstructionMessage`), relaunch. Expected: instruction alert appears once. About menu shows custom panel.
+Toggle "Show instruction message" on, delete the app's defaults (`defaults delete com.opencaffeine.OpenCaffeine didShowInstructionMessage`), relaunch. Expected: instruction alert appears once. About menu shows custom panel.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add OpenCaffein/Resources/AboutPanel.swift OpenCaffein/App/AppDelegate.swift
+git add OpenCaffeine/Resources/AboutPanel.swift OpenCaffeine/App/AppDelegate.swift
 git commit -m "feat: custom About panel and first-launch instructions"
 ```
 
@@ -2277,7 +2277,7 @@ git commit -m "feat: custom About panel and first-launch instructions"
 
 `README.md`:
 ```markdown
-# Open Caffein
+# Open Caffeine
 
 A personal macOS menubar utility that keeps the Mac awake for a chosen duration.
 Apple Silicon, macOS 13+. No code signing — local builds only.
@@ -2287,10 +2287,10 @@ Apple Silicon, macOS 13+. No code signing — local builds only.
 ```bash
 brew install xcodegen swiftlint
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Release build
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Release build
 ```
 
-The app bundle is in the Xcode `DerivedData/.../Build/Products/Release/Open Caffein.app`.
+The app bundle is in the Xcode `DerivedData/.../Build/Products/Release/Open Caffeine.app`.
 
 ## Manual QA Checklist
 
@@ -2303,13 +2303,13 @@ The app bundle is in the Xcode `DerivedData/.../Build/Products/Release/Open Caff
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers stop (use `pmset` if hard to drain).
 - [ ] `pmset -g assertions` shows `PreventUserIdleSystemSleep` while active.
-- [ ] About menu shows custom Open Caffein panel.
+- [ ] About menu shows custom Open Caffeine panel.
 - [ ] Screensaver launches from menu.
 - [ ] Custom duration prompt accepts minutes input.
 
 ## Architecture
 
-See [`docs/superpowers/specs/2026-05-28-open-caffein-design.md`](docs/superpowers/specs/2026-05-28-open-caffein-design.md).
+See [`docs/superpowers/specs/2026-05-28-open-caffeine-design.md`](docs/superpowers/specs/2026-05-28-open-caffeine-design.md).
 ```
 
 - [ ] **Step 2: Walk through the entire checklist manually.** Fix anything that fails before committing.

@@ -1,4 +1,4 @@
-# Open Caffein — Design Spec
+# Open Caffeine — Design Spec
 
 **Date:** 2026-05-28
 **Status:** Approved (pending user review of this document)
@@ -6,13 +6,13 @@
 
 ## Overview
 
-**Open Caffein** is a macOS menubar utility that prevents the Mac from
+**Open Caffeine** is a macOS menubar utility that prevents the Mac from
 sleeping for a user-selected duration. It is a clean-room rewrite inspired by
 an existing caffeine-style menubar utility that no longer ships Apple Silicon
 builds suitable for the author's machine.
 
 The original product's name must not appear anywhere in source, UI, or
-documentation — the project uses "Caffeine" / "Open Caffein" / generic terms
+documentation — the project uses "Caffeine" / "Open Caffeine" / generic terms
 like "Session" instead.
 
 ## Goals & Non-Goals
@@ -109,11 +109,11 @@ Estimated line counts in parentheses. All under the 500-line hard cap;
 splits planned at ~400 lines.
 
 ```
-OpenCaffein/
-├── OpenCaffein.xcodeproj/
-├── OpenCaffein/
+OpenCaffeine/
+├── OpenCaffeine.xcodeproj/
+├── OpenCaffeine/
 │   ├── App/
-│   │   ├── OpenCaffeinApp.swift           (~40)  @main, Settings scene 등록
+│   │   ├── OpenCaffeineApp.swift           (~40)  @main, Settings scene 등록
 │   │   └── AppDelegate.swift              (~80)  lifecycle, NSStatusItem, bootstrap
 │   │
 │   ├── MenuBar/
@@ -147,7 +147,7 @@ OpenCaffein/
 │   │
 │   └── Info.plist                                LSUIElement=true (Dock 숨김 토글)
 │
-├── OpenCaffeinTests/
+├── OpenCaffeineTests/
 │   ├── CaffeineSessionTests.swift         (~200)
 │   ├── DurationTests.swift                (~80)
 │   ├── BatteryMonitorTests.swift          (~120)
@@ -161,8 +161,8 @@ OpenCaffein/
 
 ```yaml
 included:
-  - OpenCaffein
-  - OpenCaffeinTests
+  - OpenCaffeine
+  - OpenCaffeineTests
 
 file_length:
   warning: 400
@@ -283,7 +283,7 @@ low-battery exit releases the assertion.
 
 ### Logging
 
-`os.Logger(subsystem: "com.opencaffein", category: ...)` with categories
+`os.Logger(subsystem: "com.opencaffeine", category: ...)` with categories
 `session`, `assertion`, `battery`, `hotkey`. Levels: `.debug` (dev),
 `.notice` (state transitions), `.error` (failures).
 

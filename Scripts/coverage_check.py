@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""100% line-coverage gate for Open Caffein's own logic files.
+"""100% line-coverage gate for Open Caffeine's own logic files.
 
 Reads `xcrun xccov view --report --json` output on stdin and fails (exit 1) if any
-non-excluded source file under OpenCaffein/ is below 100% line coverage.
+non-excluded source file under OpenCaffeine/ is below 100% line coverage.
 
 EXCLUDE holds UI / AppKit / system-shell files whose decision logic has been
 extracted into separately-tested types. Keep the list tight and justified — every
@@ -16,39 +16,39 @@ import sys
 
 EXCLUDE = {
     # @main entry + composition root: lifecycle wiring, no extractable logic left.
-    "OpenCaffein/App/OpenCaffeinApp.swift",
-    "OpenCaffein/App/AppDelegate.swift",
+    "OpenCaffeine/App/OpenCaffeineApp.swift",
+    "OpenCaffeine/App/AppDelegate.swift",
     # AppKit menu-bar orchestration: NSStatusItem, NSPopover, Combine observers.
-    "OpenCaffein/MenuBar/MenuBarController.swift",
+    "OpenCaffeine/MenuBar/MenuBarController.swift",
     # SwiftUI Liquid Glass popover body: declarative view, logic in models.
-    "OpenCaffein/MenuBar/MenuPanelView.swift",
+    "OpenCaffeine/MenuBar/MenuPanelView.swift",
     # Borderless transparent panel host (NSPanel + click monitor) for the popover.
-    "OpenCaffein/MenuBar/MenuPanelController.swift",
+    "OpenCaffeine/MenuBar/MenuPanelController.swift",
     # Coffee glyph Canvas views + ImageRenderer template + picker (view shell).
-    "OpenCaffein/MenuBar/CoffeeGlyph.swift",
+    "OpenCaffeine/MenuBar/CoffeeGlyph.swift",
     # NSAlert modal presenter: runModal() blocks the test runner.
-    "OpenCaffein/MenuBar/CustomDurationPrompt.swift",
+    "OpenCaffeine/MenuBar/CustomDurationPrompt.swift",
     # Standard AppKit "About" panel presentation.
-    "OpenCaffein/Resources/AboutPanel.swift",
+    "OpenCaffeine/Resources/AboutPanel.swift",
     # Declarative design tokens (fonts, radii) — no logic.
-    "OpenCaffein/Resources/Theme.swift",
+    "OpenCaffeine/Resources/Theme.swift",
     # SwiftUI view bodies: declarative; logic lives in *Actions / *Formatter / *Model.
-    "OpenCaffein/Settings/PreferencesScene.swift",
-    "OpenCaffein/Settings/GeneralSettingsView.swift",
-    "OpenCaffein/Settings/DurationSettingsView.swift",
-    "OpenCaffein/Settings/SettingsComponents.swift",
-    "OpenCaffein/Settings/HotKeyRecorderRow.swift",
-    "OpenCaffein/Settings/PreferencesWindowController.swift",
+    "OpenCaffeine/Settings/PreferencesScene.swift",
+    "OpenCaffeine/Settings/GeneralSettingsView.swift",
+    "OpenCaffeine/Settings/DurationSettingsView.swift",
+    "OpenCaffeine/Settings/SettingsComponents.swift",
+    "OpenCaffeine/Settings/HotKeyRecorderRow.swift",
+    "OpenCaffeine/Settings/PreferencesWindowController.swift",
     # Thin OS-API shims: IOKit / SMAppService / KeyboardShortcuts / NSWorkspace.
-    "OpenCaffein/Services/SystemAdapters.swift",
-    "OpenCaffein/Services/SystemBatteryProvider.swift",
-    "OpenCaffein/Services/ScreenSaverLauncher.swift",
+    "OpenCaffeine/Services/SystemAdapters.swift",
+    "OpenCaffeine/Services/SystemBatteryProvider.swift",
+    "OpenCaffeine/Services/ScreenSaverLauncher.swift",
 }
 
 
 def main():
     repo = os.environ.get("REPO", os.getcwd())
-    src_prefix = os.path.join(repo, "OpenCaffein") + os.sep
+    src_prefix = os.path.join(repo, "OpenCaffeine") + os.sep
     report = json.load(sys.stdin)
 
     failures = []

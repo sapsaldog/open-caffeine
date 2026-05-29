@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# 100% line-coverage gate for Open Caffein's logic files.
+# 100% line-coverage gate for Open Caffeine's logic files.
 # Regenerates the project, runs the test suite with coverage, and fails if any
-# non-excluded source file under OpenCaffein/ is below 100% (see Scripts/coverage_check.py).
+# non-excluded source file under OpenCaffeine/ is below 100% (see Scripts/coverage_check.py).
 #
 # Usage:  Scripts/coverage-gate.sh
 set -euo pipefail
@@ -13,7 +13,7 @@ RESULT="$(mktemp -d)/coverage.xcresult"
 
 echo "▸ Generating project + running tests with coverage…"
 xcodegen generate >/dev/null
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein \
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine \
     -destination 'platform=macOS' -enableCodeCoverage YES \
     -resultBundlePath "$RESULT" test >/dev/null
 

@@ -1,6 +1,6 @@
 included:
-  - OpenCaffein
-  - OpenCaffeinTests
+  - OpenCaffeine
+  - OpenCaffeineTests
 
 file_length:
   warning: 400

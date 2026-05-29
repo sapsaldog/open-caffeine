@@ -1,4 +1,4 @@
-# Open Caffein
+# Open Caffeine
 
 A personal macOS menubar utility that keeps the Mac awake for a chosen duration.
 Apple Silicon, macOS 26 (Tahoe)+ — native Liquid Glass UI. No code signing — local builds only.
@@ -15,21 +15,21 @@ Generate and build:
 
 ```bash
 xcodegen generate
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -configuration Release build
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration Release build
 ```
 
-The app bundle is in `~/Library/Developer/Xcode/DerivedData/OpenCaffein-*/Build/Products/Release/Open Caffein.app`.
+The app bundle is in `~/Library/Developer/Xcode/DerivedData/OpenCaffeine-*/Build/Products/Release/Open Caffeine.app`.
 
 ## Run tests
 
 ```bash
-xcodebuild -project OpenCaffein.xcodeproj -scheme OpenCaffein -destination 'platform=macOS' test
+xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'platform=macOS' test
 ```
 
 ## Coverage
 
 Every **logic** file must keep **100% line coverage**. The gate runs the suite with
-coverage and fails if any non-excluded file under `OpenCaffein/` drops below 100%:
+coverage and fails if any non-excluded file under `OpenCaffeine/` drops below 100%:
 
 ```bash
 Scripts/coverage-gate.sh
@@ -65,7 +65,7 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers stop (use `pmset` if hard to drain).
 - [ ] `pmset -g assertions` shows `PreventUserIdleDisplaySleep` while active (or `…SystemSleep` when "Keep the screen on" is off).
-- [ ] About menu shows custom Open Caffein panel.
+- [ ] About menu shows custom Open Caffeine panel.
 - [ ] Screensaver launches from menu.
 - [ ] Custom duration prompt accepts minutes input.
 - [ ] Switching Appearance in Preferences changes the menubar icon immediately.
@@ -73,14 +73,14 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 ## Project layout
 
 ```
-OpenCaffein/
+OpenCaffeine/
   App/                 # @main, AppDelegate (bootstrap)
   MenuBar/             # NSStatusItem controller, menu builder, countdown formatter, custom-duration prompt
   Services/            # SleepAssertion, CaffeineSession, HotKeyService, BatteryMonitor, LoginItemManager, ScreenSaverLauncher
   Settings/            # SwiftUI Preferences scene + tabs
   Models/              # CaffeineDuration, SessionState, MenuBarIconStyle
   Resources/           # Assets.xcassets, About panel
-OpenCaffeinTests/      # XCTest suites + Mocks/
+OpenCaffeineTests/      # XCTest suites + Mocks/
 docs/superpowers/      # Spec + plan that drove this build
 project.yml            # XcodeGen project definition (single source of truth — .xcodeproj is regenerated, not committed)
 .swiftlint.yml         # Lint config (file_length 500 hard cap)
@@ -88,7 +88,7 @@ project.yml            # XcodeGen project definition (single source of truth —
 
 ## Architecture
 
-See [`docs/superpowers/specs/2026-05-28-open-caffein-design.md`](docs/superpowers/specs/2026-05-28-open-caffein-design.md).
+See [`docs/superpowers/specs/2026-05-28-open-caffeine-design.md`](docs/superpowers/specs/2026-05-28-open-caffeine-design.md).
 
 ## License
 
