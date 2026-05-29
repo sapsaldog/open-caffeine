@@ -73,21 +73,28 @@ struct SettingsRow<Control: View>: View {
 struct MacSwitch: View {
     @Binding var isOn: Bool
     var body: some View {
-        Capsule()
-            .fill(isOn ? Color.accentColor : Color.primary.opacity(0.1))
-            .frame(width: 38, height: 22)
-            .overlay(alignment: .leading) {
-                Circle()
-                    .fill(.white)
-                    .overlay(Circle().strokeBorder(Color.black.opacity(0.04), lineWidth: 0.5))
-                    .frame(width: 18, height: 18)
-                    .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
-                    .padding(.leading, 2)
-                    .offset(x: isOn ? 16 : 0)
-            }
-            .animation(.timingCurve(0.32, 0.72, 0, 1, duration: 0.22), value: isOn)
-            .contentShape(Capsule())
-            .onTapGesture { isOn.toggle() }
+        // Driven by a Button rather than `.onTapGesture`: the menu-bar surface is
+        // hosted in a borderless, non-activating NSPanel that never becomes key,
+        // and gesture recognizers don't fire in a non-key window — but buttons do.
+        // This keeps the switch tappable both in the panel and the Settings window.
+        Button { isOn.toggle() } label: {
+            Capsule()
+                .fill(isOn ? Color.accentColor : Color.primary.opacity(0.1))
+                .frame(width: 38, height: 22)
+                .overlay(alignment: .leading) {
+                    Circle()
+                        .fill(.white)
+                        .overlay(Circle().strokeBorder(Color.black.opacity(0.04), lineWidth: 0.5))
+                        .frame(width: 18, height: 18)
+                        .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
+                        .padding(.leading, 2)
+                        .offset(x: isOn ? 16 : 0)
+                }
+                .animation(.timingCurve(0.32, 0.72, 0, 1, duration: 0.22), value: isOn)
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .focusable(false)
     }
 }
 
