@@ -20,6 +20,23 @@ xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -configuration R
 
 The app bundle is in `~/Library/Developer/Xcode/DerivedData/OpenCaffeine-*/Build/Products/Release/Open Caffeine.app`.
 
+## Releasing updates (Sparkle)
+
+Auto-updates use [Sparkle](https://sparkle-project.org). `SUFeedURL` points at
+`appcast.xml` in this repo (served via `raw.githubusercontent.com`), and updates
+are EdDSA-signed with the private key in your login keychain (public key is in
+`Info.plist` as `SUPublicEDKey`).
+
+To cut a release:
+
+1. Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in `project.yml`.
+2. Run `Scripts/release.sh` — builds Release, zips, EdDSA-signs, and regenerates `appcast.xml`.
+3. Create a GitHub release tagged `v<version>` and upload `dist/Open-Caffeine-<version>.zip`.
+4. Commit & push `appcast.xml`.
+
+The **Updates** preferences tab ("Check Now" + automatic checks) drives the real
+Sparkle updater against that feed.
+
 ## Run tests
 
 ```bash

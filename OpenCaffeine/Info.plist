@@ -24,5 +24,11 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/sapsaldog/open-caffeine/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>diEC25Ttj2TyM4Q2jRGKiGJrNnMOlhKrfkfVbIIxjSc=</string>
 </dict>
 </plist>

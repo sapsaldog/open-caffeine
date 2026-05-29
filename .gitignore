@@ -12,5 +12,8 @@ OpenCaffeine.xcodeproj/
 .build/
 Package.resolved
 
+# Release artifacts (appcast.xml is committed; built zips are not)
+dist/
+
 # macOS
 .DS_Store

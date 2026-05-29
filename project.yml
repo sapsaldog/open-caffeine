@@ -21,6 +21,9 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     from: 2.0.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 
 targets:
   OpenCaffeine:
@@ -39,8 +42,12 @@ targets:
         CFBundleName: "Open Caffeine"
         CFBundleDisplayName: "Open Caffeine"
         NSHumanReadableCopyright: ""
+        SUFeedURL: "https://raw.githubusercontent.com/sapsaldog/open-caffeine/main/appcast.xml"
+        SUPublicEDKey: "diEC25Ttj2TyM4Q2jRGKiGJrNnMOlhKrfkfVbIIxjSc="
+        SUEnableAutomaticChecks: true
     dependencies:
       - package: KeyboardShortcuts
+      - package: Sparkle
     preBuildScripts:
       - name: SwiftLint
         script: |

@@ -44,6 +44,8 @@ EXCLUDE = {
     "OpenCaffeine/Services/SystemAdapters.swift",
     "OpenCaffeine/Services/SystemBatteryProvider.swift",
     "OpenCaffeine/Services/ScreenSaverLauncher.swift",
+    # Sparkle updater wrapper (SPUStandardUpdaterController).
+    "OpenCaffeine/Services/UpdaterService.swift",
 }
 
 

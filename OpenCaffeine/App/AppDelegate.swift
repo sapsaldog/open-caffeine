@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installMenuBar()
         installHotKey()
         installBatteryMonitor()
+        UpdaterService.shared.automaticallyChecksForUpdates = settings.autoCheckUpdates
         showInstructionMessageIfNeeded()
     }
 
