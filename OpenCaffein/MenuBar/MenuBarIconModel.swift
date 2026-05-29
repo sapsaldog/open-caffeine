@@ -4,10 +4,6 @@ import Foundation
 /// Extracted from `MenuBarController` so the display rules are unit-testable
 /// without an `NSStatusItem`.
 enum MenuBarIconModel {
-    static func assetName(isActive: Bool, style: MenuBarIconStyle) -> String {
-        isActive ? style.activeAssetName : style.idleAssetName
-    }
-
     static func title(isActive: Bool, showCountdown: Bool, remaining: TimeInterval?) -> String {
         guard isActive, showCountdown else { return "" }
         return " " + CountdownFormatter.string(remaining: remaining)

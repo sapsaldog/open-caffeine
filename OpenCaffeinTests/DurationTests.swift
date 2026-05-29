@@ -32,6 +32,15 @@ final class DurationTests: XCTestCase {
         XCTAssertEqual(CaffeineDuration.forever.displayName, "Forever")
     }
 
+    func testChipLabels() {
+        XCTAssertEqual(CaffeineDuration.forever.chipLabel, "∞")
+        XCTAssertEqual(CaffeineDuration.minutes(5).chipLabel, "5m")
+        XCTAssertEqual(CaffeineDuration.minutes(45).chipLabel, "45m")
+        XCTAssertEqual(CaffeineDuration.hours(1).chipLabel, "1h")
+        XCTAssertEqual(CaffeineDuration.hours(12).chipLabel, "12h")
+        XCTAssertEqual(CaffeineDuration.custom(seconds: 600).chipLabel, "···")
+    }
+
     func testStandardPresetsListMatchesMenu() {
         let names = CaffeineDuration.standardPresets.map(\.displayName)
         XCTAssertEqual(names, [

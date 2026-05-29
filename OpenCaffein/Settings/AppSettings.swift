@@ -12,6 +12,7 @@ final class AppSettings: ObservableObject {
         static let showInstructionMessage = "showInstructionMessage"
         static let showCountdown = "showCountdown"
         static let keepDisplayAwake = "keepDisplayAwake"
+        static let appearanceMode = "appearanceMode"
         static let defaultDurationSeconds = "defaultDurationSeconds"
         static let sleepBelowBatteryPercent = "sleepBelowBatteryPercent"
         static let didShowInstructionMessage = "didShowInstructionMessage"
@@ -24,6 +25,8 @@ final class AppSettings: ObservableObject {
     @AppStorage(Key.showCountdown) var showCountdown: Bool = true
     /// When true, also prevents the display from sleeping (the screen stays on).
     @AppStorage(Key.keepDisplayAwake) var keepDisplayAwake: Bool = true
+    /// App appearance override: "auto" (default), "light", or "dark".
+    @AppStorage(Key.appearanceMode) var appearanceModeRaw: String = AppearanceMode.auto.rawValue
     /// `-1` means Forever. Other values are seconds.
     @AppStorage(Key.defaultDurationSeconds) var defaultDurationSeconds: Int = -1
     /// `0` means disabled (no automatic stop on low battery).
@@ -45,6 +48,11 @@ final class AppSettings: ObservableObject {
     var iconStyle: MenuBarIconStyle {
         get { MenuBarIconStyle(rawValue: iconStyleRaw) ?? .coffeeType1 }
         set { iconStyleRaw = newValue.rawValue }
+    }
+
+    var appearanceMode: AppearanceMode {
+        get { AppearanceMode(rawValue: appearanceModeRaw) ?? .auto }
+        set { appearanceModeRaw = newValue.rawValue }
     }
 
     /// Round-trips through `defaultDurationSeconds`. Reconstructs canonical

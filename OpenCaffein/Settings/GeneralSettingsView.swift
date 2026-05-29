@@ -1,3 +1,4 @@
+import KeyboardShortcuts
 import SwiftUI
 
 struct GeneralSettingsView: View {
@@ -6,29 +7,67 @@ struct GeneralSettingsView: View {
     let onDockVisibilityChange: (Bool) -> Void
 
     var body: some View {
-        Form {
-            Section {
-                Picker("Appearance", selection: appearanceBinding) {
-                    ForEach(MenuBarIconStyle.allCases) { style in
-                        Text(style.displayName).tag(style)
+        ScrollView {
+            VStack(spacing: 0) {
+                SettingsGroupLabel(text: "Appearance")
+                SettingsGroup {
+                    SettingsRow(
+                        "Appearance",
+                        subtitle: "Auto follows your macOS Light & Dark setting.",
+                        first: true
+                    ) {
+                        MacSegmentedControl(
+                            selection: appearanceModeBinding,
+                            values: AppearanceMode.allCases
+                        ) { mode, selected in
+                            HStack(spacing: 5) {
+                                if let icon = icon(for: mode) {
+                                    Image(systemName: icon).font(.system(size: 11))
+                                }
+                                Text(mode.displayName).font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(selected ? Color.primary : Color.secondary)
+                        }
                     }
                 }
-                .pickerStyle(.menu)
-            }
 
-            Section {
-                HotKeyRecorderRow()
-            }
+                SettingsGroupLabel(text: "Menu Bar")
+                SettingsGroup {
+                    SettingsRow(
+                        "Menu bar icon",
+                        subtitle: "The coffee cup shown in the menu bar.",
+                        first: true
+                    ) {
+                        CoffeeGlyphPicker(selection: appearanceBinding)
+                    }
+                    SettingsRow("Activate with hot key") {
+                        KeyboardShortcuts.Recorder(for: .toggleCaffeine)
+                    }
+                }
 
-            Section {
-                Toggle("Start at login", isOn: startAtLoginBinding)
-                Toggle("Show icon in dock", isOn: showInDockBinding)
-                Toggle("Show instruction message when Open Caffein opens",
-                       isOn: $settings.showInstructionMessage)
+                SettingsGroupLabel(text: "Startup & Visibility")
+                SettingsGroup {
+                    SettingsRow("Start at login", first: true) {
+                        Toggle("", isOn: startAtLoginBinding).labelsHidden()
+                    }
+                    SettingsRow("Show icon in Dock") {
+                        Toggle("", isOn: showInDockBinding).labelsHidden()
+                    }
+                    SettingsRow("Show instruction message when Open Caffein opens") {
+                        Toggle("", isOn: $settings.showInstructionMessage).labelsHidden()
+                    }
+                }
             }
+            .padding(20)
         }
-        .padding(20)
-        .formStyle(.grouped)
+    }
+
+    private func icon(for mode: AppearanceMode) -> String? {
+        switch mode {
+        case .auto: return nil
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        }
     }
 
     private var actions: GeneralSettingsActions {
@@ -41,6 +80,10 @@ struct GeneralSettingsView: View {
 
     private var appearanceBinding: Binding<MenuBarIconStyle> {
         Binding(get: { settings.iconStyle }, set: { actions.setIconStyle($0) })
+    }
+
+    private var appearanceModeBinding: Binding<AppearanceMode> {
+        Binding(get: { settings.appearanceMode }, set: { settings.appearanceMode = $0 })
     }
 
     private var startAtLoginBinding: Binding<Bool> {

@@ -18,16 +18,25 @@ EXCLUDE = {
     # @main entry + composition root: lifecycle wiring, no extractable logic left.
     "OpenCaffein/App/OpenCaffeinApp.swift",
     "OpenCaffein/App/AppDelegate.swift",
-    # AppKit menu-bar orchestration: NSStatusItem, Combine observers, NSApp.terminate.
+    # AppKit menu-bar orchestration: NSStatusItem, NSPopover, Combine observers.
     "OpenCaffein/MenuBar/MenuBarController.swift",
+    # SwiftUI Liquid Glass popover body: declarative view, logic in models.
+    "OpenCaffein/MenuBar/MenuPanelView.swift",
+    # Borderless transparent panel host (NSPanel + click monitor) for the popover.
+    "OpenCaffein/MenuBar/MenuPanelController.swift",
+    # Coffee glyph Canvas views + ImageRenderer template + picker (view shell).
+    "OpenCaffein/MenuBar/CoffeeGlyph.swift",
     # NSAlert modal presenter: runModal() blocks the test runner.
     "OpenCaffein/MenuBar/CustomDurationPrompt.swift",
     # Standard AppKit "About" panel presentation.
     "OpenCaffein/Resources/AboutPanel.swift",
+    # Declarative design tokens (fonts, radii) — no logic.
+    "OpenCaffein/Resources/Theme.swift",
     # SwiftUI view bodies: declarative; logic lives in *Actions / *Formatter / *Model.
     "OpenCaffein/Settings/PreferencesScene.swift",
     "OpenCaffein/Settings/GeneralSettingsView.swift",
     "OpenCaffein/Settings/DurationSettingsView.swift",
+    "OpenCaffein/Settings/SettingsComponents.swift",
     "OpenCaffein/Settings/HotKeyRecorderRow.swift",
     "OpenCaffein/Settings/PreferencesWindowController.swift",
     # Thin OS-API shims: IOKit / SMAppService / KeyboardShortcuts / NSWorkspace.

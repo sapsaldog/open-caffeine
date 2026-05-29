@@ -1,7 +1,7 @@
 # Open Caffein
 
 A personal macOS menubar utility that keeps the Mac awake for a chosen duration.
-Apple Silicon, macOS 13+. No code signing — local builds only.
+Apple Silicon, macOS 26 (Tahoe)+ — native Liquid Glass UI. No code signing — local builds only.
 
 ## Build
 

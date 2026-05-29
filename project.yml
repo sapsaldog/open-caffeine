@@ -2,7 +2,7 @@ name: OpenCaffein
 options:
   bundleIdPrefix: com.opencaffein
   deploymentTarget:
-    macOS: "13.0"
+    macOS: "26.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
 

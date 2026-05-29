@@ -1,12 +1,13 @@
 import AppKit
 import Combine
+import SwiftUI
 
 @MainActor
 final class MenuBarController: NSObject {
     private let session: CaffeineSession
     private let settings: AppSettings
     private let statusItem: NSStatusItem
-    private let builder = MenuBuilder()
+    private var panel: MenuPanelController!
     private var cancellables: Set<AnyCancellable> = []
     private var refreshTimer: Timer?
     private var lastKeepDisplayAwake = false
@@ -21,20 +22,42 @@ final class MenuBarController: NSObject {
         self.settings = settings
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
-        configureBuilder()
-        refreshMenu()
+        configurePanel()
+        configureButton()
         observeSession()
         observeSettings()
+        applyAppearance()
         refreshIcon()
     }
 
-    private func configureBuilder() {
-        builder.target = self
-        builder.startAction = #selector(handleStart(_:))
-        builder.screensaverAction = #selector(handleScreensaver)
-        builder.preferencesAction = #selector(handlePreferences)
-        builder.aboutAction = #selector(handleAbout)
-        builder.quitAction = #selector(handleQuit)
+    private func configurePanel() {
+        let root = MenuPanelView(
+            session: session,
+            settings: settings,
+            onScreensaver: { [weak self] in self?.onStartScreensaver?() },
+            onPreferences: { [weak self] in self?.onPreferences?() },
+            onAbout: { [weak self] in self?.onAbout?() },
+            onCustom: { [weak self] in self?.onCustomDurationRequested?() },
+            onQuit: { NSApp.terminate(nil) },
+            dismiss: { [weak self] in self?.panel.close() }
+        )
+        panel = MenuPanelController(rootView: root)
+    }
+
+    private func configureButton() {
+        guard let button = statusItem.button else { return }
+        button.action = #selector(togglePanel)
+        button.target = self
+        updateMenuBarImage()
+    }
+
+    private func updateMenuBarImage() {
+        statusItem.button?.image = CoffeeGlyphRenderer.image(settings.iconStyle)
+    }
+
+    @objc private func togglePanel() {
+        guard let button = statusItem.button else { return }
+        panel.toggle(below: button)
     }
 
     private func observeSession() {
@@ -42,7 +65,6 @@ final class MenuBarController: NSObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.refreshIcon()
-                self?.refreshMenu()
                 self?.scheduleTickIfNeeded()
             }
             .store(in: &cancellables)
@@ -55,6 +77,8 @@ final class MenuBarController: NSObject {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.refreshIcon()
+                self.updateMenuBarImage()
+                self.applyAppearance()
                 self.reapplyAssertionIfDisplayPreferenceChanged()
             }
             .store(in: &cancellables)
@@ -64,6 +88,10 @@ final class MenuBarController: NSObject {
         guard settings.keepDisplayAwake != lastKeepDisplayAwake else { return }
         lastKeepDisplayAwake = settings.keepDisplayAwake
         session.reapplyAssertionIfActive()
+    }
+
+    private func applyAppearance() {
+        NSApp.appearance = settings.appearanceMode.nsAppearance
     }
 
     private func scheduleTickIfNeeded() {
@@ -81,36 +109,10 @@ final class MenuBarController: NSObject {
 
     private func refreshIcon() {
         guard let button = statusItem.button else { return }
-        let style = settings.iconStyle
-        let assetName = MenuBarIconModel.assetName(isActive: session.state.isActive, style: style)
-        let image = NSImage(named: assetName) ?? NSImage(named: style.idleAssetName)
-        image?.isTemplate = true
-        button.image = image
         button.title = MenuBarIconModel.title(
             isActive: session.state.isActive,
             showCountdown: settings.showCountdown,
             remaining: session.state.remaining()
         )
     }
-
-    private func refreshMenu() {
-        let current: CaffeineDuration?
-        if case .active(let duration, _) = session.state { current = duration } else { current = nil }
-        statusItem.menu = builder.build(currentDuration: current)
-    }
-
-    @objc private func handleStart(_ sender: NSMenuItem) {
-        if let preset = sender.representedObject as? CaffeineDuration {
-            try? session.start(preset)
-            return
-        }
-        if sender.representedObject as? String == "custom" {
-            onCustomDurationRequested?()
-        }
-    }
-
-    @objc private func handleScreensaver() { onStartScreensaver?() }
-    @objc private func handlePreferences() { onPreferences?() }
-    @objc private func handleAbout() { onAbout?() }
-    @objc private func handleQuit() { NSApp.terminate(nil) }
 }

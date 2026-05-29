@@ -4,26 +4,41 @@ struct DurationSettingsView: View {
     @ObservedObject var settings: AppSettings
 
     var body: some View {
-        Form {
-            Section {
-                Toggle("Keep the screen on", isOn: $settings.keepDisplayAwake)
-                Toggle("Show countdown", isOn: $settings.showCountdown)
-                Picker("Default duration", selection: defaultDurationBinding) {
-                    ForEach(CaffeineDuration.standardPresets, id: \.self) { preset in
-                        Text(preset.displayName).tag(preset)
+        ScrollView {
+            VStack(spacing: 0) {
+                SettingsGroupLabel(text: "Display")
+                SettingsGroup {
+                    SettingsRow(
+                        "Keep the screen on",
+                        subtitle: "When off, the Mac stays awake but the display is allowed to sleep.",
+                        first: true
+                    ) {
+                        Toggle("", isOn: $settings.keepDisplayAwake).labelsHidden()
                     }
                 }
-                .pickerStyle(.menu)
-            } footer: {
-                Text("When off, the Mac stays awake but the display is allowed to sleep.")
-            }
 
-            Section("Battery") {
-                BatteryThresholdRow(settings: settings)
+                SettingsGroupLabel(text: "Countdown")
+                SettingsGroup {
+                    SettingsRow("Show countdown next to the menu-bar icon", first: true) {
+                        Toggle("", isOn: $settings.showCountdown).labelsHidden()
+                    }
+                    SettingsRow("Default duration", subtitle: "Used when you activate with the hot key.") {
+                        Picker("", selection: defaultDurationBinding) {
+                            ForEach(CaffeineDuration.standardPresets, id: \.self) { preset in
+                                Text(preset.displayName).tag(preset)
+                            }
+                        }
+                        .labelsHidden().fixedSize()
+                    }
+                }
+
+                SettingsGroupLabel(text: "Battery")
+                SettingsGroup {
+                    BatteryThresholdRow(settings: settings)
+                }
             }
+            .padding(20)
         }
-        .padding(20)
-        .formStyle(.grouped)
     }
 
     private var defaultDurationBinding: Binding<CaffeineDuration> {
@@ -40,22 +55,26 @@ private struct BatteryThresholdRow: View {
 
     var body: some View {
         let snapshot = provider.currentBattery()
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Allow sleep if battery gets below:")
+                Text("Allow sleep if battery gets below").font(.system(size: 13))
                 Spacer()
                 Text(BatteryThresholdFormatter.label(
                     hasBattery: snapshot.hasBattery,
                     percent: settings.sleepBelowBatteryPercent
                 ))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(snapshot.hasBattery ? Color.accentColor : Color.secondary)
             }
             Slider(value: percentBinding, in: 0...50, step: 5)
                 .disabled(!snapshot.hasBattery)
-            if !snapshot.hasBattery {
-                Text("No battery detected").foregroundStyle(.red)
-            }
+            Text(snapshot.hasBattery
+                 ? "On battery power, Open Caffein steps aside so your Mac can sleep and protect its charge."
+                 : "No battery detected.")
+                .font(.system(size: 11))
+                .foregroundStyle(snapshot.hasBattery ? Color.secondary : Color.red)
         }
+        .padding(14)
     }
 
     private var percentBinding: Binding<Double> {

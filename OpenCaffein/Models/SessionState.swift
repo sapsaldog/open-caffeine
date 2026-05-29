@@ -17,4 +17,13 @@ enum SessionState: Equatable {
         let elapsed = now.timeIntervalSince(startedAt)
         return max(0, total - elapsed)
     }
+
+    /// Ring-fill fraction for the menu panel: `0` when idle, `1` for an active
+    /// Forever session, otherwise the remaining/total fraction clamped to 0...1.
+    func progressShown(now: Date = Date()) -> Double {
+        guard case .active(let duration, let startedAt) = self else { return 0 }
+        guard let total = duration.timeInterval, total > 0 else { return 1 }
+        let fraction = (total - now.timeIntervalSince(startedAt)) / total
+        return min(1, max(0, fraction))
+    }
 }

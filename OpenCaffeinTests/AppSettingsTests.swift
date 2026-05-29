@@ -5,7 +5,7 @@ import XCTest
 final class AppSettingsTests: XCTestCase {
     private let keys = [
         "iconStyle", "startAtLogin", "showIconInDock", "showInstructionMessage",
-        "showCountdown", "keepDisplayAwake", "defaultDurationSeconds",
+        "showCountdown", "keepDisplayAwake", "appearanceMode", "defaultDurationSeconds",
         "sleepBelowBatteryPercent", "didShowInstructionMessage"
     ]
     private var cancellables: Set<AnyCancellable> = []
@@ -29,6 +29,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.showInstructionMessage)
         XCTAssertTrue(settings.showCountdown)
         XCTAssertTrue(settings.keepDisplayAwake)
+        XCTAssertEqual(settings.appearanceModeRaw, "auto")
         XCTAssertEqual(settings.defaultDurationSeconds, -1)
         XCTAssertEqual(settings.sleepBelowBatteryPercent, 0)
         XCTAssertFalse(settings.didShowInstructionMessage)
@@ -41,6 +42,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showInstructionMessage = true
         settings.showCountdown = false
         settings.keepDisplayAwake = false
+        settings.appearanceModeRaw = "dark"
         settings.sleepBelowBatteryPercent = 20
         settings.didShowInstructionMessage = true
 
@@ -50,6 +52,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(reloaded.showInstructionMessage)
         XCTAssertFalse(reloaded.showCountdown)
         XCTAssertFalse(reloaded.keepDisplayAwake)
+        XCTAssertEqual(reloaded.appearanceModeRaw, "dark")
         XCTAssertEqual(reloaded.sleepBelowBatteryPercent, 20)
         XCTAssertTrue(reloaded.didShowInstructionMessage)
     }
@@ -66,6 +69,20 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings()
         settings.iconStyleRaw = "not-a-real-style"
         XCTAssertEqual(settings.iconStyle, .coffeeType1)
+    }
+
+    func testAppearanceModeGetAndSet() {
+        let settings = AppSettings()
+        XCTAssertEqual(settings.appearanceMode, .auto)
+        settings.appearanceMode = .dark
+        XCTAssertEqual(settings.appearanceModeRaw, "dark")
+        XCTAssertEqual(settings.appearanceMode, .dark)
+    }
+
+    func testAppearanceModeFallsBackOnUnknownRawValue() {
+        let settings = AppSettings()
+        settings.appearanceModeRaw = "bogus"
+        XCTAssertEqual(settings.appearanceMode, .auto)
     }
 
     func testDefaultDurationIsForeverWhenNegative() {

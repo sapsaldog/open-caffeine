@@ -27,6 +27,16 @@ enum CaffeineDuration: Equatable, Hashable {
         }
     }
 
+    /// Compact label for the menu-panel duration chips (∞, 5m, 1h …).
+    var chipLabel: String {
+        switch self {
+        case .forever: return "∞"
+        case .minutes(let minutes): return "\(minutes)m"
+        case .hours(let hours): return "\(hours)h"
+        case .custom: return "···"
+        }
+    }
+
     static let standardPresets: [CaffeineDuration] = [
         .forever,
         .minutes(5), .minutes(10), .minutes(15), .minutes(30), .minutes(45),

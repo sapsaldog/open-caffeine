@@ -28,7 +28,10 @@ final class PreferencesWindowController {
         )
         let window = NSWindow(contentViewController: hosting)
         window.title = "Preferences"
-        window.styleMask = [.titled, .closable]
+        window.styleMask = [.titled, .closable, .fullSizeContentView]
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.center()
         return window
