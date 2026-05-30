@@ -9,8 +9,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.0.1"
+    CURRENT_PROJECT_VERSION: "2"
     PRODUCT_NAME: "Open Caffeine"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
@@ -41,6 +41,8 @@ targets:
         LSUIElement: true
         CFBundleName: "Open Caffeine"
         CFBundleDisplayName: "Open Caffeine"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSHumanReadableCopyright: ""
         SUFeedURL: "https://raw.githubusercontent.com/sapsaldog/open-caffeine/main/appcast.xml"
         SUPublicEDKey: "diEC25Ttj2TyM4Q2jRGKiGJrNnMOlhKrfkfVbIIxjSc="
