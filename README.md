@@ -3,6 +3,17 @@
 A personal macOS menubar utility that keeps the Mac awake for a chosen duration.
 Apple Silicon, macOS 26 (Tahoe)+ — native Liquid Glass UI. No code signing — local builds only.
 
+<p align="center">
+  <a href="https://www.producthunt.com/products/open-caffeine?utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-open-caffeine" target="_blank">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1160317&amp;theme=dark" />
+      <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1160317&amp;theme=light" alt="Open Caffeine - Keep your Mac awake | Product Hunt" width="250" height="54" />
+    </picture>
+  </a>
+</p>
+
+<p align="center"><strong>🏆 Ranked #10 Product of the Day on Product Hunt</strong></p>
+
 ## Build
 
 Prerequisites:
