@@ -46,6 +46,8 @@ EXCLUDE = {
     "OpenCaffeine/Services/ScreenSaverLauncher.swift",
     # Sparkle updater wrapper (SPUStandardUpdaterController).
     "OpenCaffeine/Services/UpdaterService.swift",
+    # Usero feedback URLSession orchestration over tested transport builders/parsers.
+    "OpenCaffeine/Services/FeedbackService.swift",
 }
 
 
