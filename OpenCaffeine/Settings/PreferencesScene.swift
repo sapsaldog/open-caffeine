@@ -11,12 +11,13 @@ struct PreferencesScene: View {
     @State private var page: PrefPage = .general
 
     enum PrefPage: Hashable {
-        case general, battery, updates
+        case general, battery, updates, feedback
         var title: String {
             switch self {
             case .general: return "General"
             case .battery: return "Duration & Battery"
             case .updates: return "Updates"
+            case .feedback: return "Feedback"
             }
         }
     }
@@ -54,6 +55,8 @@ struct PreferencesScene: View {
                        selected: page == .battery) { page = .battery }
                 NavRow(title: "Updates", systemImage: "arrow.down.circle", tint: .green,
                        selected: page == .updates) { page = .updates }
+                NavRow(title: "Feedback", systemImage: "text.bubble", tint: .pink,
+                       selected: page == .feedback) { page = .feedback }
             }
             .padding(.horizontal, 10)
             Spacer()
@@ -85,6 +88,8 @@ struct PreferencesScene: View {
                 DurationSettingsView(settings: settings)
             case .updates:
                 UpdatesSettingsView(settings: settings)
+            case .feedback:
+                FeedbackSettingsView()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
