@@ -182,9 +182,11 @@ struct FeedbackSettingsView: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .heic, .tiff, .image]
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .heic, .heif, .tiff]
         guard panel.runModal() == .OK else { return }
-        model.addScreenshots(panel.urls.compactMap(Self.pendingScreenshot(from:)))
+        let urls = panel.urls
+        let accepted = urls.compactMap(Self.pendingScreenshot(from:))
+        model.addScreenshots(accepted, rejectedCount: urls.count - accepted.count)
     }
 
     private static func pendingScreenshot(from url: URL) -> PendingScreenshot? {

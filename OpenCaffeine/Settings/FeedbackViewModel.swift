@@ -11,7 +11,9 @@ final class FeedbackViewModel: ObservableObject {
         case failed(String)
     }
 
-    @Published var draft: FeedbackDraft
+    @Published var draft: FeedbackDraft {
+        didSet { clearTerminalPhase() }
+    }
     @Published private(set) var phase: Phase = .idle
     @Published var attachmentNotice: String?
 
@@ -28,28 +30,20 @@ final class FeedbackViewModel: ObservableObject {
 
     func selectRating(_ value: Int) {
         draft.rating = (draft.rating == value) ? nil : value
-        clearTerminalPhase()
     }
 
-    func addScreenshots(_ shots: [PendingScreenshot]) {
+    func addScreenshots(_ shots: [PendingScreenshot], rejectedCount: Int = 0) {
         let remaining = FeedbackDraft.maxScreenshots - draft.screenshots.count
-        guard remaining > 0 else {
-            attachmentNotice = "You can attach up to \(FeedbackDraft.maxScreenshots) screenshots."
-            return
+        if remaining > 0 {
+            draft.screenshots.append(contentsOf: shots.prefix(remaining))
         }
-        if shots.count > remaining {
-            attachmentNotice = "Only \(remaining) more screenshot(s) can be attached."
-        } else {
-            attachmentNotice = nil
-        }
-        draft.screenshots.append(contentsOf: shots.prefix(remaining))
-        clearTerminalPhase()
+        let overflow = max(0, shots.count - max(0, remaining))
+        attachmentNotice = attachmentMessage(rejected: rejectedCount, overflow: overflow)
     }
 
     func removeScreenshot(_ id: UUID) {
         draft.screenshots.removeAll { $0.id == id }
         attachmentNotice = nil
-        clearTerminalPhase()
     }
 
     func send() async {
@@ -70,6 +64,17 @@ final class FeedbackViewModel: ObservableObject {
         } catch {
             phase = .failed(message(for: error))
         }
+    }
+
+    private func attachmentMessage(rejected: Int, overflow: Int) -> String? {
+        var parts: [String] = []
+        if rejected > 0 {
+            parts.append("Skipped \(rejected) file(s) — images must be under 10 MB.")
+        }
+        if overflow > 0 {
+            parts.append("You can attach up to \(FeedbackDraft.maxScreenshots) screenshots.")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
     }
 
     private func clearTerminalPhase() {

@@ -99,6 +99,7 @@ final class FeedbackModelsTests: XCTestCase {
         XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "jpeg"), "image/jpeg")
         XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "gif"), "image/gif")
         XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "heic"), "image/heic")
+        XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "heif"), "image/heif")
         XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "tiff"), "image/tiff")
         XCTAssertEqual(PendingScreenshot.imageMimeType(forPathExtension: "tif"), "image/tiff")
         XCTAssertNil(PendingScreenshot.imageMimeType(forPathExtension: "txt"))

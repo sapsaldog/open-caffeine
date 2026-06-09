@@ -133,4 +133,19 @@ final class FeedbackViewModelTests: XCTestCase {
         model.addScreenshots([shot("a.png")])
         XCTAssertEqual(model.phase, .idle)
     }
+
+    func testAddScreenshotsReportsRejectedFiles() {
+        let model = FeedbackViewModel(service: MockFeedbackService())
+        model.addScreenshots([shot("a.png")], rejectedCount: 2)
+        XCTAssertEqual(model.draft.screenshots.count, 1)
+        XCTAssertNotNil(model.attachmentNotice)
+    }
+
+    func testEditingCommentClearsTerminalPhase() async {
+        let model = FeedbackViewModel(service: MockFeedbackService(), draft: FeedbackDraft(rating: 4))
+        await model.send()
+        XCTAssertEqual(model.phase, .success)
+        model.draft.comment = "more"
+        XCTAssertEqual(model.phase, .idle)
+    }
 }

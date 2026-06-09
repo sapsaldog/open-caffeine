@@ -32,6 +32,7 @@ struct PendingScreenshot: Identifiable, Equatable {
         case "jpg", "jpeg": return "image/jpeg"
         case "gif": return "image/gif"
         case "heic": return "image/heic"
+        case "heif": return "image/heif"
         case "tiff", "tif": return "image/tiff"
         default: return nil
         }
