@@ -42,6 +42,7 @@ EXCLUDE = {
     "OpenCaffeine/Settings/PreferencesWindowController.swift",
     # Canvas-drawn rating faces (declarative view shell).
     "OpenCaffeine/Settings/RatingFace.swift",
+    "OpenCaffeine/Settings/FeedbackSettingsView.swift",
     # Thin OS-API shims: IOKit / SMAppService / KeyboardShortcuts / NSWorkspace.
     "OpenCaffeine/Services/SystemAdapters.swift",
     "OpenCaffeine/Services/SystemBatteryProvider.swift",
