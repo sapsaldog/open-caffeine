@@ -1,7 +1,7 @@
 # Open Caffeine
 
-A personal macOS menubar utility that keeps the Mac awake for a chosen duration.
-Apple Silicon, macOS 26 (Tahoe)+ — native Liquid Glass UI. No code signing — local builds only.
+An open-source macOS menu-bar utility that keeps your Mac awake for a chosen duration.
+Built for Apple Silicon and macOS 26 (Tahoe) or newer with a native Liquid Glass UI.
 
 <p align="center">
   <a href="https://www.producthunt.com/products/open-caffeine?utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-open-caffeine" target="_blank">
@@ -14,7 +14,22 @@ Apple Silicon, macOS 26 (Tahoe)+ — native Liquid Glass UI. No code signing —
 
 <p align="center"><strong>🏆 Ranked #10 Product of the Day on Product Hunt</strong></p>
 
-## Build
+## Features
+
+- Timed sessions from 5 minutes to 8 hours, plus a keep-awake-forever mode
+- Separate control over display sleep and system sleep
+- Live menu-bar countdown and a customizable global shortcut
+- Optional battery threshold that stops an active session
+- Launch-at-login, Dock visibility, appearance, and menu-bar icon preferences
+- EdDSA-verified automatic updates through Sparkle
+
+## Install
+
+Download the latest archive from [GitHub Releases](https://github.com/sapsaldog/open-caffeine/releases/latest), extract it, and move **Open Caffeine.app** to `/Applications`.
+
+Open Caffeine releases are EdDSA-signed for Sparkle update integrity, but the app is not Apple code-signed or notarized. On first launch, macOS may require **System Settings → Privacy & Security → Open Anyway**.
+
+## Build from source
 
 Prerequisites:
 
