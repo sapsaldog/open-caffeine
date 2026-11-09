@@ -68,7 +68,7 @@ struct MenuPanelView: View {
             .buttonStyle(.plain)
             .focusable(false)
 
-            Text(active ? CountdownFormatter.string(remaining: remaining) : "Asleep")
+            Text(active ? countdownText : "Asleep")
                 .font(.macCountdown(26))
                 .foregroundStyle(.primary)
                 .padding(.top, 6)
@@ -77,6 +77,10 @@ struct MenuPanelView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 14)
+    }
+
+    private var countdownText: String {
+        CountdownFormatter.string(remaining: remaining, hideSeconds: settings.hideCountdownSeconds)
     }
 
     private var subtitle: String {

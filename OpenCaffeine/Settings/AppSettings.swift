@@ -11,6 +11,7 @@ final class AppSettings: ObservableObject {
         static let showIconInDock = "showIconInDock"
         static let showInstructionMessage = "showInstructionMessage"
         static let showCountdown = "showCountdown"
+        static let hideCountdownSeconds = "hideCountdownSeconds"
         static let keepDisplayAwake = "keepDisplayAwake"
         static let appearanceMode = "appearanceMode"
         static let autoCheckUpdates = "autoCheckUpdates"
@@ -25,6 +26,8 @@ final class AppSettings: ObservableObject {
     @AppStorage(Key.showIconInDock) var showIconInDock: Bool = false
     @AppStorage(Key.showInstructionMessage) var showInstructionMessage: Bool = false
     @AppStorage(Key.showCountdown) var showCountdown: Bool = true
+    /// When true, countdowns render as `h:mm` without the seconds field.
+    @AppStorage(Key.hideCountdownSeconds) var hideCountdownSeconds: Bool = false
     /// When true, also prevents the display from sleeping (the screen stays on).
     @AppStorage(Key.keepDisplayAwake) var keepDisplayAwake: Bool = true
     /// App appearance override: "auto" (default), "light", or "dark".

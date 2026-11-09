@@ -5,7 +5,7 @@ import XCTest
 final class AppSettingsTests: XCTestCase {
     private let keys = [
         "iconStyle", "startAtLogin", "showIconInDock", "showInstructionMessage",
-        "showCountdown", "keepDisplayAwake", "appearanceMode", "autoCheckUpdates",
+        "showCountdown", "hideCountdownSeconds", "keepDisplayAwake", "appearanceMode", "autoCheckUpdates",
         "updateChannel", "defaultDurationSeconds",
         "sleepBelowBatteryPercent", "didShowInstructionMessage"
     ]
@@ -29,6 +29,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.showIconInDock)
         XCTAssertFalse(settings.showInstructionMessage)
         XCTAssertTrue(settings.showCountdown)
+        XCTAssertFalse(settings.hideCountdownSeconds)
         XCTAssertTrue(settings.keepDisplayAwake)
         XCTAssertEqual(settings.appearanceModeRaw, "auto")
         XCTAssertTrue(settings.autoCheckUpdates)
@@ -44,6 +45,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showIconInDock = true
         settings.showInstructionMessage = true
         settings.showCountdown = false
+        settings.hideCountdownSeconds = true
         settings.keepDisplayAwake = false
         settings.appearanceModeRaw = "dark"
         settings.autoCheckUpdates = false
@@ -56,6 +58,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(reloaded.showIconInDock)
         XCTAssertTrue(reloaded.showInstructionMessage)
         XCTAssertFalse(reloaded.showCountdown)
+        XCTAssertTrue(reloaded.hideCountdownSeconds)
         XCTAssertFalse(reloaded.keepDisplayAwake)
         XCTAssertEqual(reloaded.appearanceModeRaw, "dark")
         XCTAssertFalse(reloaded.autoCheckUpdates)

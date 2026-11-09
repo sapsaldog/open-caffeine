@@ -22,6 +22,9 @@ struct DurationSettingsView: View {
                     SettingsRow("Show countdown next to the menu-bar icon", first: true) {
                         MacSwitch(isOn: $settings.showCountdown)
                     }
+                    SettingsRow("Hide seconds in countdown", subtitle: "Shows the remaining time as hours:minutes.") {
+                        MacSwitch(isOn: $settings.hideCountdownSeconds)
+                    }
                     SettingsRow("Default duration", subtitle: "Used when you activate with the hot key.") {
                         Picker("", selection: defaultDurationBinding) {
                             ForEach(CaffeineDuration.standardPresets, id: \.self) { preset in
