@@ -112,6 +112,7 @@ final class MenuBarController: NSObject {
         button.title = MenuBarIconModel.title(
             isActive: session.state.isActive,
             showCountdown: settings.showCountdown,
+            hideSeconds: settings.hideCountdownSeconds,
             remaining: session.state.remaining()
         )
     }

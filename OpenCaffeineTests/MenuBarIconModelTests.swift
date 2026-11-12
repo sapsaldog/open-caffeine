@@ -14,4 +14,11 @@ final class MenuBarIconModelTests: XCTestCase {
         let expected = " " + CountdownFormatter.string(remaining: 300)
         XCTAssertEqual(MenuBarIconModel.title(isActive: true, showCountdown: true, remaining: 300), expected)
     }
+
+    func testTitleOmitsSecondsWhenHidden() {
+        XCTAssertEqual(
+            MenuBarIconModel.title(isActive: true, showCountdown: true, hideSeconds: true, remaining: 5400),
+            " 1:30"
+        )
+    }
 }

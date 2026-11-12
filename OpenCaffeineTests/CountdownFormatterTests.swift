@@ -20,5 +20,32 @@ final class CountdownFormatterTests: XCTestCase {
 
     func testNilReturnsInfinity() {
         XCTAssertEqual(CountdownFormatter.string(remaining: nil), "∞")
+        XCTAssertEqual(CountdownFormatter.string(remaining: nil, hideSeconds: true), "∞")
+    }
+
+    func testHideSecondsUsesHourMin() {
+        XCTAssertEqual(CountdownFormatter.string(remaining: 0, hideSeconds: true), "0:00")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 120, hideSeconds: true), "0:02")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 3600, hideSeconds: true), "1:00")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 5400, hideSeconds: true), "1:30")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 43200, hideSeconds: true), "12:00")
+    }
+
+    func testHideSecondsRoundsMinutesUp() {
+        XCTAssertEqual(CountdownFormatter.string(remaining: 1, hideSeconds: true), "0:01")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 61, hideSeconds: true), "0:02")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 3599, hideSeconds: true), "1:00")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 3661, hideSeconds: true), "1:02")
+    }
+
+    func testHideSecondsRoundsRawIntervalUp() {
+        // Rounds the raw interval up once, so under half a second left is not "0:00".
+        XCTAssertEqual(CountdownFormatter.string(remaining: 0.3, hideSeconds: true), "0:01")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 60.3, hideSeconds: true), "0:02")
+    }
+
+    func testNegativeRemainingClampsToZero() {
+        XCTAssertEqual(CountdownFormatter.string(remaining: -90), "0:00")
+        XCTAssertEqual(CountdownFormatter.string(remaining: -120, hideSeconds: true), "0:00")
     }
 }

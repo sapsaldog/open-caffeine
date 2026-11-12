@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- "Hide seconds in countdown" option (off by default) that shows the remaining
+  time as hours:minutes in the menu bar and panel.
+
+### Fixed
+- The panel countdown no longer briefly shows more than the chosen duration
+  right after a session starts.
+
 ## [1.0.0] - 2026-05-28
 
 First public release.
