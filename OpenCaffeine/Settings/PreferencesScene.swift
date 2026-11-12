@@ -40,6 +40,7 @@ struct PreferencesScene: View {
             Color.clear.frame(height: topBar)          // traffic-light strip
             HStack(spacing: 10) {
                 Image("AppGlyph").resizable().frame(width: 34, height: 34)
+                    .accessibilityHidden(true)  // decorative: the name is right next to it
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Open Caffeine").font(.system(size: 13, weight: .semibold))
                     Text("Version \(appVersion)").font(.system(size: 11)).foregroundStyle(.secondary)

@@ -9,8 +9,18 @@ import SwiftUI
 final class MenuPanelController {
     private let panel: NSPanel
     private var clickMonitor: Any?
+    private let onOpen: @MainActor () -> Void
+    private let onClose: @MainActor () -> Void
 
-    init(rootView: some View) {
+    /// `onOpen` runs before the panel appears and `onClose` after it is hidden, so
+    /// per-open work (like the panel clock) runs only while the panel is visible.
+    init(
+        rootView: some View,
+        onOpen: @escaping @MainActor () -> Void = {},
+        onClose: @escaping @MainActor () -> Void = {}
+    ) {
+        self.onOpen = onOpen
+        self.onClose = onClose
         panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 320, height: 480),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -38,6 +48,7 @@ final class MenuPanelController {
 
     func open(below button: NSStatusBarButton) {
         guard let hosting = panel.contentView else { return }
+        onOpen()
         let size = hosting.fittingSize
         panel.setContentSize(size)
         if let window = button.window {
@@ -51,6 +62,7 @@ final class MenuPanelController {
     func close() {
         removeMonitor()
         panel.orderOut(nil)
+        onClose()
     }
 
     private func installMonitor() {

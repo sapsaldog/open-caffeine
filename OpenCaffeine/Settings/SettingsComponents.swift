@@ -38,13 +38,21 @@ struct SettingsRow<Control: View>: View {
     private let title: String
     private let subtitle: String?
     private let first: Bool
+    /// True when the control already speaks the row's title (switch rows), so the
+    /// row text is hidden from VoiceOver instead of being read twice.
+    private let controlSpeaksTitle: Bool
     private let control: Control
 
     init(_ title: String, subtitle: String? = nil, first: Bool = false, @ViewBuilder control: () -> Control) {
+        self.init(title, subtitle: subtitle, first: first, controlSpeaksTitle: false, control: control())
+    }
+
+    fileprivate init(_ title: String, subtitle: String?, first: Bool, controlSpeaksTitle: Bool, control: Control) {
         self.title = title
         self.subtitle = subtitle
         self.first = first
-        self.control = control()
+        self.controlSpeaksTitle = controlSpeaksTitle
+        self.control = control
     }
 
     var body: some View {
@@ -57,6 +65,7 @@ struct SettingsRow<Control: View>: View {
                         Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityHidden(controlSpeaksTitle)
                 Spacer(minLength: 12)
                 control
             }
@@ -68,10 +77,16 @@ struct SettingsRow<Control: View>: View {
 }
 
 extension SettingsRow where Control == MacSwitch {
-    /// A row whose control is a switch. The row title doubles as the switch's
-    /// accessibility label, so VoiceOver announces what it turns on or off.
+    /// A row whose control is a switch. VoiceOver reads the row as that one
+    /// switch: the title is its name and the subtitle its hint.
     init(_ title: String, subtitle: String? = nil, first: Bool = false, isOn: Binding<Bool>) {
-        self.init(title, subtitle: subtitle, first: first) { MacSwitch(title, isOn: isOn) }
+        self.init(
+            title,
+            subtitle: subtitle,
+            first: first,
+            controlSpeaksTitle: true,
+            control: MacSwitch(title, hint: subtitle, isOn: isOn)
+        )
     }
 }
 
@@ -80,11 +95,15 @@ extension SettingsRow where Control == MacSwitch {
 /// white knob that slides 16pt over a .22s curve.
 struct MacSwitch: View {
     private let title: String
+    private let hint: String?
     @Binding private var isOn: Bool
 
-    /// - Parameter title: What VoiceOver announces; the visible label is the row text.
-    init(_ title: String, isOn: Binding<Bool>) {
+    /// - Parameters:
+    ///   - title: What VoiceOver announces; the visible label is the row text.
+    ///   - hint: Extra context VoiceOver reads after the name (the row subtitle).
+    init(_ title: String, hint: String? = nil, isOn: Binding<Bool>) {
         self.title = title
+        self.hint = hint
         self._isOn = isOn
     }
 
@@ -114,7 +133,10 @@ struct MacSwitch: View {
         // never becomes key, so it never shows focus there). VoiceOver sees a real
         // labeled switch with an on/off value rather than an unnamed button.
         .accessibilityRepresentation {
-            Toggle(title, isOn: $isOn).toggleStyle(.switch)
+            Toggle(title, isOn: $isOn)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .accessibilityHint(hint ?? "")
         }
     }
 }

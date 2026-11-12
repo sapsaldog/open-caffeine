@@ -33,9 +33,11 @@ final class MenuBarController: NSObject {
     }
 
     private func configurePanel() {
+        let clock = PanelClock()
         let root = MenuPanelView(
             session: session,
             settings: settings,
+            clock: clock,
             onScreensaver: { [weak self] in self?.onStartScreensaver?() },
             onPreferences: { [weak self] in self?.onPreferences?() },
             onAbout: { [weak self] in self?.onAbout?() },
@@ -43,7 +45,7 @@ final class MenuBarController: NSObject {
             onQuit: { NSApp.terminate(nil) },
             dismiss: { [weak self] in self?.panel.close() }
         )
-        panel = MenuPanelController(rootView: root)
+        panel = MenuPanelController(rootView: root, onOpen: clock.start, onClose: clock.stop)
     }
 
     private func configureButton() {

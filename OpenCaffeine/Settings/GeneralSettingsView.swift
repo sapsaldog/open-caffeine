@@ -42,6 +42,7 @@ struct GeneralSettingsView: View {
                     }
                     SettingsRow("Activate with hot key") {
                         KeyboardShortcuts.Recorder(for: .toggleCaffeine)
+                            .accessibilityLabel("Activate with hot key")
                     }
                 }
 

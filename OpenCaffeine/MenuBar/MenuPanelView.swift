@@ -2,10 +2,12 @@ import SwiftUI
 
 /// Design variant A — the modern Liquid Glass menu-bar popover, floated in a
 /// transparent panel so the `.glassEffect` card refracts the desktop. Pure view
-/// layer (excluded from coverage); state lives in the injected session/settings.
+/// layer (excluded from coverage); state lives in the injected session/settings/clock.
 struct MenuPanelView: View {
     @ObservedObject var session: CaffeineSession
     @ObservedObject var settings: AppSettings
+    /// Ticks only while the panel is open (see `PanelClock`).
+    @ObservedObject var clock: PanelClock
     var onScreensaver: () -> Void = {}
     var onPreferences: () -> Void = {}
     var onAbout: () -> Void = {}
@@ -14,12 +16,9 @@ struct MenuPanelView: View {
     var dismiss: () -> Void = {}
 
     @State private var selected: CaffeineDuration = .forever
-    @State private var now = Date()
-
-    private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     private var active: Bool { session.state.isActive }
-    private var remaining: TimeInterval? { session.state.remaining(now: now) }
+    private var remaining: TimeInterval? { session.state.remaining(now: clock.now) }
     private var isForever: Bool {
         if case .active(let duration, _) = session.state { return duration.timeInterval == nil }
         return false
@@ -39,7 +38,6 @@ struct MenuPanelView: View {
         .toggleStyle(.switch)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22))
         .onAppear { selected = settings.defaultDuration }
-        .onReceive(tick) { now = $0 }
     }
 
     // MARK: Header
@@ -48,6 +46,7 @@ struct MenuPanelView: View {
         HStack(spacing: 10) {
             Image("AppGlyph")
                 .resizable().frame(width: 26, height: 26)
+                .accessibilityHidden(true)  // decorative: the name is right next to it
             Text("Open Caffeine").font(.system(size: 15, weight: .semibold))
             Spacer()
             StatusPill(active: active)
@@ -61,12 +60,19 @@ struct MenuPanelView: View {
         VStack(spacing: 4) {
             Button(action: toggle) {
                 ZStack {
-                    ProgressRing(progress: session.state.progressShown(now: now), size: 120, lineWidth: 6)
+                    ProgressRing(progress: session.state.progressShown(now: clock.now), size: 120, lineWidth: 6)
                     CupBadge(active: active)
                 }
             }
             .buttonStyle(.plain)
             .focusable(false)
+            // The cup is an on/off control drawn as artwork: present it to
+            // VoiceOver as a named switch instead of an unlabeled button.
+            .accessibilityRepresentation {
+                Toggle("Stay awake", isOn: Binding(get: { active }, set: { _ in toggle() }))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+            }
 
             Text(active ? countdownText : "Asleep")
                 .font(.macCountdown(26))
@@ -97,9 +103,13 @@ struct MenuPanelView: View {
                 .foregroundStyle(.secondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(CaffeineDuration.standardPresets, id: \.self) { duration in
-                    Chip(label: duration.chipLabel, selected: isSelected(duration)) { tapChip(duration) }
+                    Chip(
+                        label: duration.chipLabel,
+                        spokenLabel: duration.displayName,
+                        selected: isSelected(duration)
+                    ) { tapChip(duration) }
                 }
-                Chip(label: "···", selected: false) { dismiss(); onCustom() }
+                Chip(label: "···", spokenLabel: "Custom duration", selected: false) { dismiss(); onCustom() }
             }
         }
         .padding(.top, 4)
@@ -139,6 +149,7 @@ struct MenuPanelView: View {
     private var keepDisplayAwakeRow: some View {
         HStack {
             Text("Keep display awake").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                .accessibilityHidden(true)  // the switch speaks this title itself
             Spacer()
             MacSwitch("Keep display awake", isOn: Binding(
                 get: { settings.keepDisplayAwake },
@@ -252,6 +263,8 @@ private struct CupBadge: View {
 
 private struct Chip: View {
     let label: String
+    /// What VoiceOver reads: "5 min" rather than "5m", "Forever" rather than "∞".
+    let spokenLabel: String
     let selected: Bool
     let action: () -> Void
     var body: some View {
@@ -273,6 +286,8 @@ private struct Chip: View {
         }
         .buttonStyle(.plain)
         .focusable(false)
+        .accessibilityLabel(spokenLabel)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 

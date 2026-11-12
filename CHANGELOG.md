@@ -21,7 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   countdown frozen.
 - VoiceOver now names each settings switch and reads whether it is on or off,
   and the switches can be reached with the keyboard. The pop-up menus, the
-  battery slider, and the menu-bar icon choices are labeled too.
+  battery slider, the hot-key field, and the menu-bar icon choices are labeled
+  too. In the menu-bar panel, the cup reads as a "Stay awake" switch and the
+  duration buttons read as "5 min", "Forever", and so on.
+- The menu-bar panel no longer runs a once-a-second timer while it is closed,
+  so Open Caffeine stays idle in the background instead of waking every second.
 
 ## [1.0.0] - 2026-05-28
 
