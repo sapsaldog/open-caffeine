@@ -10,11 +10,12 @@ enum SessionState: Equatable {
     }
 
     /// Remaining seconds, or `nil` for Forever sessions.
-    /// Returns `0` once a finite session has elapsed.
+    /// Returns `0` once a finite session has elapsed, and never more than the
+    /// session length: a `now` slightly before `startedAt` counts as no time elapsed.
     func remaining(now: Date = Date()) -> TimeInterval? {
         guard case .active(let duration, let startedAt) = self else { return nil }
         guard let total = duration.timeInterval else { return nil }
-        let elapsed = now.timeIntervalSince(startedAt)
+        let elapsed = max(0, now.timeIntervalSince(startedAt))
         return max(0, total - elapsed)
     }
 

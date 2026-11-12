@@ -32,4 +32,11 @@ final class SessionStateTests: XCTestCase {
         let state = SessionState.active(duration: .custom(seconds: 0), startedAt: start)
         XCTAssertEqual(state.progressShown(now: start), 1)
     }
+
+    func testRemainingNeverExceedsDurationWhenClockLagsStart() {
+        // The menu panel's clock ticks once a second, so right after a start its
+        // `now` can be slightly earlier than `startedAt`.
+        let state = SessionState.active(duration: .minutes(5), startedAt: start)
+        XCTAssertEqual(state.remaining(now: start.addingTimeInterval(-0.6)), 300)
+    }
 }

@@ -37,4 +37,15 @@ final class CountdownFormatterTests: XCTestCase {
         XCTAssertEqual(CountdownFormatter.string(remaining: 3599, hideSeconds: true), "1:00")
         XCTAssertEqual(CountdownFormatter.string(remaining: 3661, hideSeconds: true), "1:02")
     }
+
+    func testHideSecondsRoundsRawIntervalUp() {
+        // Rounds the raw interval up once, so under half a second left is not "0:00".
+        XCTAssertEqual(CountdownFormatter.string(remaining: 0.3, hideSeconds: true), "0:01")
+        XCTAssertEqual(CountdownFormatter.string(remaining: 60.3, hideSeconds: true), "0:02")
+    }
+
+    func testNegativeRemainingClampsToZero() {
+        XCTAssertEqual(CountdownFormatter.string(remaining: -90), "0:00")
+        XCTAssertEqual(CountdownFormatter.string(remaining: -120, hideSeconds: true), "0:00")
+    }
 }
