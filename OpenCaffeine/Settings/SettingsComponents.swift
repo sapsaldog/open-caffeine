@@ -67,11 +67,27 @@ struct SettingsRow<Control: View>: View {
     }
 }
 
+extension SettingsRow where Control == MacSwitch {
+    /// A row whose control is a switch. The row title doubles as the switch's
+    /// accessibility label, so VoiceOver announces what it turns on or off.
+    init(_ title: String, subtitle: String? = nil, first: Bool = false, isOn: Binding<Bool>) {
+        self.init(title, subtitle: subtitle, first: first) { MacSwitch(title, isOn: isOn) }
+    }
+}
+
 /// macOS switch matching the design's `.mac-switch` spec (components.css): a
 /// 38×22 pill with a `fill-primary` track that turns accent when on, and an 18pt
 /// white knob that slides 16pt over a .22s curve.
 struct MacSwitch: View {
-    @Binding var isOn: Bool
+    private let title: String
+    @Binding private var isOn: Bool
+
+    /// - Parameter title: What VoiceOver announces; the visible label is the row text.
+    init(_ title: String, isOn: Binding<Bool>) {
+        self.title = title
+        self._isOn = isOn
+    }
+
     var body: some View {
         // Driven by a Button rather than `.onTapGesture`: the menu-bar surface is
         // hosted in a borderless, non-activating NSPanel that never becomes key,
@@ -94,7 +110,12 @@ struct MacSwitch: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .focusable(false)
+        // Focusable so keyboard users can Tab to it in Settings (the menu-bar panel
+        // never becomes key, so it never shows focus there). VoiceOver sees a real
+        // labeled switch with an on/off value rather than an unnamed button.
+        .accessibilityRepresentation {
+            Toggle(title, isOn: $isOn).toggleStyle(.switch)
+        }
     }
 }
 
@@ -134,6 +155,7 @@ struct MacSegmentedControl<Value: Hashable, Segment: View>: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
         .padding(2)

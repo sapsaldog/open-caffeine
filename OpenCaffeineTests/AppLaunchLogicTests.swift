@@ -22,4 +22,18 @@ final class AppLaunchLogicTests: XCTestCase {
     func testDoesNotShowWhenAlreadyShown() {
         XCTAssertFalse(AppLaunchLogic.shouldShowInstructionMessage(showInstructionMessage: true, alreadyShown: true))
     }
+
+    func testNormalLaunchIsNotATestHost() {
+        XCTAssertFalse(AppLaunchLogic.isRunningAsTestHost(environment: [:]))
+    }
+
+    func testDetectsTheXCTestHostEnvironment() {
+        let environment = ["XCTestConfigurationFilePath": "/tmp/OpenCaffeineTests.xctestconfiguration"]
+        XCTAssertTrue(AppLaunchLogic.isRunningAsTestHost(environment: environment))
+    }
+
+    func testThisTestRunIsDetectedAsATestHost() {
+        // Fails if a future Xcode stops setting the variable the check relies on.
+        XCTAssertTrue(AppLaunchLogic.isRunningAsTestHost(environment: ProcessInfo.processInfo.environment))
+    }
 }

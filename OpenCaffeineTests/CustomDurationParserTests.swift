@@ -19,4 +19,18 @@ final class CustomDurationParserTests: XCTestCase {
         XCTAssertNil(CustomDurationParser.parse("abc"))
         XCTAssertNil(CustomDurationParser.parse(""))
     }
+
+    func testAcceptsUpToSevenDays() {
+        XCTAssertEqual(CustomDurationParser.parse("10080"), .minutes(10_080))
+    }
+
+    func testRejectsLongerThanSevenDays() {
+        XCTAssertNil(CustomDurationParser.parse("10081"))
+    }
+
+    func testRejectsHugeValuesInsteadOfCrashing() {
+        // A session this long used to crash the countdown converting to Int.
+        XCTAssertNil(CustomDurationParser.parse("999999999999999999"))
+        XCTAssertNil(CustomDurationParser.parse("99999999999999999999"))
+    }
 }

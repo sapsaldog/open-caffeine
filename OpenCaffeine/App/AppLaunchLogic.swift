@@ -10,4 +10,11 @@ enum AppLaunchLogic {
     static func shouldShowInstructionMessage(showInstructionMessage: Bool, alreadyShown: Bool) -> Bool {
         showInstructionMessage && !alreadyShown
     }
+
+    /// True when the app was launched only to host the unit tests. Its normal
+    /// startup (menu-bar item, global hot key, updater, login item) would then run
+    /// against the developer's real Mac and preferences, so `AppDelegate` skips it.
+    static func isRunningAsTestHost(environment: [String: String]) -> Bool {
+        environment["XCTestConfigurationFilePath"] != nil
+    }
 }

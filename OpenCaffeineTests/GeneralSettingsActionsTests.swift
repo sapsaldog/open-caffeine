@@ -3,15 +3,10 @@ import XCTest
 
 @MainActor
 final class GeneralSettingsActionsTests: XCTestCase {
-    private let keys = ["iconStyle", "startAtLogin", "showIconInDock"]
-
-    override func setUp() {
-        super.setUp()
-        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
-    }
+    private let store = TestDefaults()
 
     override func tearDown() {
-        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        store.remove()
         super.tearDown()
     }
 
@@ -22,7 +17,7 @@ final class GeneralSettingsActionsTests: XCTestCase {
     }
 
     private func makeHarness(onDock: @escaping (Bool) -> Void = { _ in }) -> Harness {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         let service = FakeLoginItemService()
         let actions = GeneralSettingsActions(
             settings: settings,

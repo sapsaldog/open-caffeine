@@ -140,7 +140,7 @@ struct MenuPanelView: View {
         HStack {
             Text("Keep display awake").font(.system(size: 12.5)).foregroundStyle(.secondary)
             Spacer()
-            MacSwitch(isOn: Binding(
+            MacSwitch("Keep display awake", isOn: Binding(
                 get: { settings.keepDisplayAwake },
                 set: { settings.keepDisplayAwake = $0 }
             ))

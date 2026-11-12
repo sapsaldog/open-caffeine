@@ -11,6 +11,8 @@ final class MenuBarController: NSObject {
     private var cancellables: Set<AnyCancellable> = []
     private var refreshTimer: Timer?
     private var lastKeepDisplayAwake = false
+    private var lastShowCountdown = false
+    private var lastHideCountdownSeconds = false
 
     var onPreferences: (() -> Void)?
     var onAbout: (() -> Void)?
@@ -72,6 +74,8 @@ final class MenuBarController: NSObject {
 
     private func observeSettings() {
         lastKeepDisplayAwake = settings.keepDisplayAwake
+        lastShowCountdown = settings.showCountdown
+        lastHideCountdownSeconds = settings.hideCountdownSeconds
         settings.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -80,6 +84,7 @@ final class MenuBarController: NSObject {
                 self.updateMenuBarImage()
                 self.applyAppearance()
                 self.reapplyAssertionIfDisplayPreferenceChanged()
+                self.rescheduleTickIfCountdownPreferenceChanged()
             }
             .store(in: &cancellables)
     }
@@ -90,6 +95,18 @@ final class MenuBarController: NSObject {
         session.reapplyAssertionIfActive()
     }
 
+    /// Turning the countdown on mid-session must start the refresh timer (it used
+    /// to show one title and freeze), and hiding seconds changes its cadence. Only
+    /// reschedule on these changes: unrelated writes (e.g. dragging the battery
+    /// slider) would otherwise keep restarting the timer before it fires.
+    private func rescheduleTickIfCountdownPreferenceChanged() {
+        guard settings.showCountdown != lastShowCountdown
+            || settings.hideCountdownSeconds != lastHideCountdownSeconds else { return }
+        lastShowCountdown = settings.showCountdown
+        lastHideCountdownSeconds = settings.hideCountdownSeconds
+        scheduleTickIfNeeded()
+    }
+
     private func applyAppearance() {
         NSApp.appearance = settings.appearanceMode.nsAppearance
     }
@@ -97,10 +114,19 @@ final class MenuBarController: NSObject {
     private func scheduleTickIfNeeded() {
         refreshTimer?.invalidate()
         refreshTimer = nil
-        guard session.state.isActive,
-              session.state.remaining() != nil,
-              settings.showCountdown else { return }
-        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        guard let schedule = MenuBarIconModel.refreshSchedule(
+            isActive: session.state.isActive,
+            showCountdown: settings.showCountdown,
+            hideSeconds: settings.hideCountdownSeconds,
+            remaining: session.state.remaining()
+        ) else { return }
+        // A repeating timer keeps its phase (no drift), so with seconds hidden every
+        // fire stays just past a minute boundary.
+        let timer = Timer(
+            fire: Date().addingTimeInterval(schedule.delay),
+            interval: schedule.interval,
+            repeats: true
+        ) { [weak self] _ in
             Task { @MainActor in self?.refreshIcon() }
         }
         RunLoop.main.add(timer, forMode: .common)

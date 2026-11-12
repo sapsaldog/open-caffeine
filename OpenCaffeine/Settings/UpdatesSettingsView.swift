@@ -17,10 +17,9 @@ struct UpdatesSettingsView: View {
                     SettingsRow(
                         "Automatically check for updates",
                         subtitle: "Open Caffeine checks once a day in the background.",
-                        first: true
-                    ) {
-                        MacSwitch(isOn: autoCheckBinding)
-                    }
+                        first: true,
+                        isOn: autoCheckBinding
+                    )
                 }
 
                 SettingsGroupLabel(text: "Update Channel")
@@ -30,7 +29,7 @@ struct UpdatesSettingsView: View {
                         subtitle: "Beta builds may be less stable.",
                         first: true
                     ) {
-                        Picker("", selection: channelBinding) {
+                        Picker("Receive updates from", selection: channelBinding) {
                             ForEach(UpdateChannel.allCases) { channel in
                                 Text(channel.displayName).tag(channel)
                             }
