@@ -3,27 +3,17 @@ import Combine
 import XCTest
 
 final class AppSettingsTests: XCTestCase {
-    private let keys = [
-        "iconStyle", "startAtLogin", "showIconInDock", "showInstructionMessage",
-        "showCountdown", "hideCountdownSeconds", "keepDisplayAwake", "appearanceMode", "autoCheckUpdates",
-        "updateChannel", "defaultDurationSeconds",
-        "sleepBelowBatteryPercent", "didShowInstructionMessage"
-    ]
+    private let store = TestDefaults()
     private var cancellables: Set<AnyCancellable> = []
 
-    override func setUp() {
-        super.setUp()
-        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
-    }
-
     override func tearDown() {
-        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        store.remove()
         cancellables.removeAll()
         super.tearDown()
     }
 
     func testDefaultsMatchSpec() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         XCTAssertEqual(settings.iconStyleRaw, MenuBarIconStyle.coffeeType1.rawValue)
         XCTAssertFalse(settings.startAtLogin)
         XCTAssertFalse(settings.showIconInDock)
@@ -40,7 +30,7 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testEachStoredPropertyPersists() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.startAtLogin = true
         settings.showIconInDock = true
         settings.showInstructionMessage = true
@@ -53,7 +43,7 @@ final class AppSettingsTests: XCTestCase {
         settings.sleepBelowBatteryPercent = 20
         settings.didShowInstructionMessage = true
 
-        let reloaded = AppSettings()
+        let reloaded = AppSettings(defaults: store.defaults)
         XCTAssertTrue(reloaded.startAtLogin)
         XCTAssertTrue(reloaded.showIconInDock)
         XCTAssertTrue(reloaded.showInstructionMessage)
@@ -68,7 +58,7 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testIconStyleGetAndSet() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         XCTAssertEqual(settings.iconStyle, .coffeeType1)
         settings.iconStyle = .coffeeType3
         XCTAssertEqual(settings.iconStyleRaw, "coffeeType3")
@@ -76,13 +66,13 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testIconStyleFallsBackOnUnknownRawValue() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.iconStyleRaw = "not-a-real-style"
         XCTAssertEqual(settings.iconStyle, .coffeeType1)
     }
 
     func testAppearanceModeGetAndSet() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         XCTAssertEqual(settings.appearanceMode, .auto)
         settings.appearanceMode = .dark
         XCTAssertEqual(settings.appearanceModeRaw, "dark")
@@ -90,13 +80,13 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testAppearanceModeFallsBackOnUnknownRawValue() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.appearanceModeRaw = "bogus"
         XCTAssertEqual(settings.appearanceMode, .auto)
     }
 
     func testUpdateChannelGetAndSet() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         XCTAssertEqual(settings.updateChannel, .stable)
         settings.updateChannel = .beta
         XCTAssertEqual(settings.updateChannelRaw, "beta")
@@ -104,41 +94,47 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testUpdateChannelFallsBackOnUnknownRawValue() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.updateChannelRaw = "nope"
         XCTAssertEqual(settings.updateChannel, .stable)
     }
 
     func testDefaultDurationIsForeverWhenNegative() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.defaultDurationSeconds = -1
         XCTAssertEqual(settings.defaultDuration, .forever)
     }
 
     func testDefaultDurationReconstructsPreset() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.defaultDuration = .minutes(30)
         XCTAssertEqual(settings.defaultDurationSeconds, 1800)
         XCTAssertEqual(settings.defaultDuration, .minutes(30))
     }
 
     func testDefaultDurationFallsBackToCustom() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.defaultDurationSeconds = 123
         XCTAssertEqual(settings.defaultDuration, .custom(seconds: 123))
     }
 
     func testSettingDefaultDurationForeverStoresNegative() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         settings.defaultDuration = .forever
         XCTAssertEqual(settings.defaultDurationSeconds, -1)
     }
 
     func testObjectWillChangeBridgesDefaultsNotification() {
-        let settings = AppSettings()
+        let settings = AppSettings(defaults: store.defaults)
         let changed = expectation(description: "objectWillChange forwarded")
         settings.objectWillChange.sink { _ in changed.fulfill() }.store(in: &cancellables)
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
         wait(for: [changed], timeout: 2.0)
+    }
+
+    func testWritesGoToTheInjectedStore() {
+        let settings = AppSettings(defaults: store.defaults)
+        settings.hideCountdownSeconds = true
+        XCTAssertEqual(store.defaults.object(forKey: "hideCountdownSeconds") as? Bool, true)
     }
 }

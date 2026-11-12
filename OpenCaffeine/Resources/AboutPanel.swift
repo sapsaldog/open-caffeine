@@ -50,6 +50,7 @@ private struct AboutView: View {
                 .resizable().frame(width: 104, height: 104)
                 .shadow(color: .black.opacity(0.22), radius: 10, y: 8)
                 .padding(.bottom, 14)
+                .accessibilityHidden(true)  // decorative: the name is right below it
 
             Text("Open Caffeine").font(.system(size: 22, weight: .bold))
             Text("Version \(version) (\(build))")

@@ -17,10 +17,9 @@ struct UpdatesSettingsView: View {
                     SettingsRow(
                         "Automatically check for updates",
                         subtitle: "Open Caffeine checks once a day in the background.",
-                        first: true
-                    ) {
-                        MacSwitch(isOn: autoCheckBinding)
-                    }
+                        first: true,
+                        isOn: autoCheckBinding
+                    )
                 }
 
                 SettingsGroupLabel(text: "Update Channel")
@@ -30,7 +29,7 @@ struct UpdatesSettingsView: View {
                         subtitle: "Beta builds may be less stable.",
                         first: true
                     ) {
-                        Picker("", selection: channelBinding) {
+                        Picker("Receive updates from", selection: channelBinding) {
                             ForEach(UpdateChannel.allCases) { channel in
                                 Text(channel.displayName).tag(channel)
                             }
@@ -48,6 +47,7 @@ struct UpdatesSettingsView: View {
             Image("AppGlyph")
                 .resizable().frame(width: 52, height: 52)
                 .shadow(color: .black.opacity(0.18), radius: 3, y: 2)
+                .accessibilityHidden(true)  // decorative
             VStack(alignment: .leading, spacing: 2) {
                 Text("Open Caffeine is up to date")
                     .font(.system(size: 14, weight: .semibold))

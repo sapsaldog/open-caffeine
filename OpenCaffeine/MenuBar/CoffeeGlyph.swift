@@ -141,6 +141,7 @@ struct CoffeeGlyphPicker: View {
         MacSegmentedControl(selection: $selection, values: MenuBarIconStyle.allCases) { style, selected in
             CoffeeGlyph(type: style, color: selected ? .accentColor : .secondary)
                 .frame(width: glyphSize, height: glyphSize)
+                .accessibilityLabel(style.displayName)
         }
     }
 }

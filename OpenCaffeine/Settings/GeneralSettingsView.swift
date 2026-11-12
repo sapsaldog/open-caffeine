@@ -42,20 +42,18 @@ struct GeneralSettingsView: View {
                     }
                     SettingsRow("Activate with hot key") {
                         KeyboardShortcuts.Recorder(for: .toggleCaffeine)
+                            .accessibilityLabel("Activate with hot key")
                     }
                 }
 
                 SettingsGroupLabel(text: "Startup & Visibility")
                 SettingsGroup {
-                    SettingsRow("Start at login", first: true) {
-                        MacSwitch(isOn: startAtLoginBinding)
-                    }
-                    SettingsRow("Show icon in Dock") {
-                        MacSwitch(isOn: showInDockBinding)
-                    }
-                    SettingsRow("Show instruction message when Open Caffeine opens") {
-                        MacSwitch(isOn: $settings.showInstructionMessage)
-                    }
+                    SettingsRow("Start at login", first: true, isOn: startAtLoginBinding)
+                    SettingsRow("Show icon in Dock", isOn: showInDockBinding)
+                    SettingsRow(
+                        "Show instruction message when Open Caffeine opens",
+                        isOn: $settings.showInstructionMessage
+                    )
                 }
             }
             .padding(20)

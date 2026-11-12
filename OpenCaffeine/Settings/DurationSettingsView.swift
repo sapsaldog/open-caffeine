@@ -11,22 +11,21 @@ struct DurationSettingsView: View {
                     SettingsRow(
                         "Keep the screen on",
                         subtitle: "When off, the Mac stays awake but the display is allowed to sleep.",
-                        first: true
-                    ) {
-                        MacSwitch(isOn: $settings.keepDisplayAwake)
-                    }
+                        first: true,
+                        isOn: $settings.keepDisplayAwake
+                    )
                 }
 
                 SettingsGroupLabel(text: "Countdown")
                 SettingsGroup {
-                    SettingsRow("Show countdown next to the menu-bar icon", first: true) {
-                        MacSwitch(isOn: $settings.showCountdown)
-                    }
-                    SettingsRow("Hide seconds in countdown", subtitle: "Shows the remaining time as hours:minutes.") {
-                        MacSwitch(isOn: $settings.hideCountdownSeconds)
-                    }
+                    SettingsRow("Show countdown next to the menu-bar icon", first: true, isOn: $settings.showCountdown)
+                    SettingsRow(
+                        "Hide seconds in countdown",
+                        subtitle: "Shows the remaining time as hours:minutes.",
+                        isOn: $settings.hideCountdownSeconds
+                    )
                     SettingsRow("Default duration", subtitle: "Used when you activate with the hot key.") {
-                        Picker("", selection: defaultDurationBinding) {
+                        Picker("Default duration", selection: defaultDurationBinding) {
                             ForEach(CaffeineDuration.standardPresets, id: \.self) { preset in
                                 Text(preset.displayName).tag(preset)
                             }
@@ -71,6 +70,11 @@ private struct BatteryThresholdRow: View {
             }
             Slider(value: percentBinding, in: 0...50, step: 5)
                 .disabled(!snapshot.hasBattery)
+                .accessibilityLabel("Allow sleep if battery gets below")
+                .accessibilityValue(BatteryThresholdFormatter.label(
+                    hasBattery: snapshot.hasBattery,
+                    percent: settings.sleepBelowBatteryPercent
+                ))
             Text(snapshot.hasBattery
                  ? "On battery power, Open Caffeine steps aside so your Mac can sleep and protect its charge."
                  : "No battery detected.")

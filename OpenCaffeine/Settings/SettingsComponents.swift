@@ -38,13 +38,21 @@ struct SettingsRow<Control: View>: View {
     private let title: String
     private let subtitle: String?
     private let first: Bool
+    /// True when the control already speaks the row's title (switch rows), so the
+    /// row text is hidden from VoiceOver instead of being read twice.
+    private let controlSpeaksTitle: Bool
     private let control: Control
 
     init(_ title: String, subtitle: String? = nil, first: Bool = false, @ViewBuilder control: () -> Control) {
+        self.init(title, subtitle: subtitle, first: first, controlSpeaksTitle: false, control: control())
+    }
+
+    fileprivate init(_ title: String, subtitle: String?, first: Bool, controlSpeaksTitle: Bool, control: Control) {
         self.title = title
         self.subtitle = subtitle
         self.first = first
-        self.control = control()
+        self.controlSpeaksTitle = controlSpeaksTitle
+        self.control = control
     }
 
     var body: some View {
@@ -57,6 +65,7 @@ struct SettingsRow<Control: View>: View {
                         Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityHidden(controlSpeaksTitle)
                 Spacer(minLength: 12)
                 control
             }
@@ -67,11 +76,37 @@ struct SettingsRow<Control: View>: View {
     }
 }
 
+extension SettingsRow where Control == MacSwitch {
+    /// A row whose control is a switch. VoiceOver reads the row as that one
+    /// switch: the title is its name and the subtitle its hint.
+    init(_ title: String, subtitle: String? = nil, first: Bool = false, isOn: Binding<Bool>) {
+        self.init(
+            title,
+            subtitle: subtitle,
+            first: first,
+            controlSpeaksTitle: true,
+            control: MacSwitch(title, hint: subtitle, isOn: isOn)
+        )
+    }
+}
+
 /// macOS switch matching the design's `.mac-switch` spec (components.css): a
 /// 38×22 pill with a `fill-primary` track that turns accent when on, and an 18pt
 /// white knob that slides 16pt over a .22s curve.
 struct MacSwitch: View {
-    @Binding var isOn: Bool
+    private let title: String
+    private let hint: String?
+    @Binding private var isOn: Bool
+
+    /// - Parameters:
+    ///   - title: What VoiceOver announces; the visible label is the row text.
+    ///   - hint: Extra context VoiceOver reads after the name (the row subtitle).
+    init(_ title: String, hint: String? = nil, isOn: Binding<Bool>) {
+        self.title = title
+        self.hint = hint
+        self._isOn = isOn
+    }
+
     var body: some View {
         // Driven by a Button rather than `.onTapGesture`: the menu-bar surface is
         // hosted in a borderless, non-activating NSPanel that never becomes key,
@@ -94,7 +129,15 @@ struct MacSwitch: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .focusable(false)
+        // Focusable so keyboard users can Tab to it in Settings (the menu-bar panel
+        // never becomes key, so it never shows focus there). VoiceOver sees a real
+        // labeled switch with an on/off value rather than an unnamed button.
+        .accessibilityRepresentation {
+            Toggle(title, isOn: $isOn)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .accessibilityHint(hint ?? "")
+        }
     }
 }
 
@@ -134,6 +177,7 @@ struct MacSegmentedControl<Value: Hashable, Segment: View>: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
         .padding(2)

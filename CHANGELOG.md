@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - The panel countdown no longer briefly shows more than the chosen duration
   right after a session starts.
+- Entering a very large custom duration no longer crashes the app. Custom
+  durations now take 1 to 10,080 minutes (7 days), and the prompt asks again
+  when the value is out of range.
+- Turning on "Show countdown" during a session no longer leaves the menu-bar
+  countdown frozen.
+- VoiceOver now names each settings switch and reads whether it is on or off,
+  and the switches can be reached with the keyboard. The pop-up menus, the
+  battery slider, the hot-key field, and the menu-bar icon choices are labeled
+  too. In the menu-bar panel, the cup reads as a "Stay awake" switch and the
+  duration buttons read as "5 min", "Forever", and so on.
+- The menu-bar panel no longer runs a once-a-second timer while it is closed,
+  so Open Caffeine stays idle in the background instead of waking every second.
 
 ## [1.0.0] - 2026-05-28
 

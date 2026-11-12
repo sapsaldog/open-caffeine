@@ -21,29 +21,46 @@ final class AppSettings: ObservableObject {
         static let didShowInstructionMessage = "didShowInstructionMessage"
     }
 
-    @AppStorage(Key.iconStyle) var iconStyleRaw: String = MenuBarIconStyle.coffeeType1.rawValue
-    @AppStorage(Key.startAtLogin) var startAtLogin: Bool = false
-    @AppStorage(Key.showIconInDock) var showIconInDock: Bool = false
-    @AppStorage(Key.showInstructionMessage) var showInstructionMessage: Bool = false
-    @AppStorage(Key.showCountdown) var showCountdown: Bool = true
+    // Default values live in `init`, where the backing store is chosen.
+    @AppStorage var iconStyleRaw: String
+    @AppStorage var startAtLogin: Bool
+    @AppStorage var showIconInDock: Bool
+    @AppStorage var showInstructionMessage: Bool
+    @AppStorage var showCountdown: Bool
     /// When true, countdowns render as `h:mm` without the seconds field.
-    @AppStorage(Key.hideCountdownSeconds) var hideCountdownSeconds: Bool = false
+    @AppStorage var hideCountdownSeconds: Bool
     /// When true, also prevents the display from sleeping (the screen stays on).
-    @AppStorage(Key.keepDisplayAwake) var keepDisplayAwake: Bool = true
+    @AppStorage var keepDisplayAwake: Bool
     /// App appearance override: "auto" (default), "light", or "dark".
-    @AppStorage(Key.appearanceMode) var appearanceModeRaw: String = AppearanceMode.auto.rawValue
+    @AppStorage var appearanceModeRaw: String
     /// Software-update preferences (UI only — no updater backend is wired yet).
-    @AppStorage(Key.autoCheckUpdates) var autoCheckUpdates: Bool = true
-    @AppStorage(Key.updateChannel) var updateChannelRaw: String = UpdateChannel.stable.rawValue
+    @AppStorage var autoCheckUpdates: Bool
+    @AppStorage var updateChannelRaw: String
     /// `-1` means Forever. Other values are seconds.
-    @AppStorage(Key.defaultDurationSeconds) var defaultDurationSeconds: Int = -1
+    @AppStorage var defaultDurationSeconds: Int
     /// `0` means disabled (no automatic stop on low battery).
-    @AppStorage(Key.sleepBelowBatteryPercent) var sleepBelowBatteryPercent: Int = 0
-    @AppStorage(Key.didShowInstructionMessage) var didShowInstructionMessage: Bool = false
+    @AppStorage var sleepBelowBatteryPercent: Int
+    @AppStorage var didShowInstructionMessage: Bool
 
     private var defaultsObserver: AnyCancellable?
 
-    init() {
+    /// Settings live in `defaults`. The app uses `.standard`; tests pass a
+    /// throwaway suite so they never touch the real preferences.
+    init(defaults store: UserDefaults = .standard) {
+        _iconStyleRaw = AppStorage(wrappedValue: MenuBarIconStyle.coffeeType1.rawValue, Key.iconStyle, store: store)
+        _startAtLogin = AppStorage(wrappedValue: false, Key.startAtLogin, store: store)
+        _showIconInDock = AppStorage(wrappedValue: false, Key.showIconInDock, store: store)
+        _showInstructionMessage = AppStorage(wrappedValue: false, Key.showInstructionMessage, store: store)
+        _showCountdown = AppStorage(wrappedValue: true, Key.showCountdown, store: store)
+        _hideCountdownSeconds = AppStorage(wrappedValue: false, Key.hideCountdownSeconds, store: store)
+        _keepDisplayAwake = AppStorage(wrappedValue: true, Key.keepDisplayAwake, store: store)
+        _appearanceModeRaw = AppStorage(wrappedValue: AppearanceMode.auto.rawValue, Key.appearanceMode, store: store)
+        _autoCheckUpdates = AppStorage(wrappedValue: true, Key.autoCheckUpdates, store: store)
+        _updateChannelRaw = AppStorage(wrappedValue: UpdateChannel.stable.rawValue, Key.updateChannel, store: store)
+        _defaultDurationSeconds = AppStorage(wrappedValue: -1, Key.defaultDurationSeconds, store: store)
+        _sleepBelowBatteryPercent = AppStorage(wrappedValue: 0, Key.sleepBelowBatteryPercent, store: store)
+        _didShowInstructionMessage = AppStorage(wrappedValue: false, Key.didShowInstructionMessage, store: store)
+
         // @AppStorage drives SwiftUI view updates but does not forward through
         // ObservableObject.objectWillChange. Bridge UserDefaults changes so
         // non-View subscribers (menubar controller, etc.) get Combine signals.

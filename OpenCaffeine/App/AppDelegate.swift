@@ -16,6 +16,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Hosting the unit tests: don't touch the menu bar, hot keys, updater,
+        // login item, or the developer's real preferences.
+        guard !AppLaunchLogic.isRunningAsTestHost(environment: ProcessInfo.processInfo.environment) else { return }
         loginItem.sync(enabled: settings.startAtLogin)
         applyDockVisibility(settings.showIconInDock)
         installMenuBar()
