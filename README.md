@@ -18,6 +18,8 @@ Built for Apple Silicon and macOS 26 (Tahoe) or newer with a native Liquid Glass
 
 - Timed sessions from 5 minutes to 8 hours, plus a keep-awake-forever mode
 - Separate control over display sleep and system sleep
+- Display Off: turn the screens off right away while the Mac keeps working
+- Stay awake with the lid closed (MacBooks, optional): keep working with the lid shut, with automatic safety cutoffs
 - Live menu-bar countdown and a customizable global shortcut
 - Optional battery threshold that stops an active session
 - Launch-at-login, Dock visibility, appearance, and menu-bar icon preferences
@@ -107,9 +109,16 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 - [ ] Start-at-login toggle survives reboot.
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers stop (use `pmset` if hard to drain).
-- [ ] `pmset -g assertions` shows `PreventUserIdleDisplaySleep` while active (or `…SystemSleep` when "Keep the screen on" is off).
+- [ ] `pmset -g assertions` shows both `PreventUserIdleDisplaySleep` and `PreventUserIdleSystemSleep` while active (only `…SystemSleep` when "Keep the screen on" is off).
 - [ ] About menu shows custom Open Caffeine panel.
-- [ ] Screensaver launches from menu.
+- [ ] Screensaver button launches the screen saver.
+- [ ] Desktop Mac (no lid) → no "Stay awake with lid closed" switch in the panel.
+- [ ] MacBook: turning on "Stay awake with lid closed" explains itself once, then opens System Settings to allow the helper; after allowing, the caption disappears.
+- [ ] MacBook, session running, lid mode on → `pmset -g | grep SleepDisabled` shows `1`; closing the lid keeps the work running and the built-in display dark. Stopping the session (or turning the switch off) → `0`.
+- [ ] MacBook, lid mode active → force-quit Open Caffeine → `SleepDisabled` goes back to `0` within seconds.
+- [ ] MacBook on battery below 20% → caption says it's paused and `SleepDisabled` is `0`; plugging in brings it back.
+- [ ] MacBook, lid mode on, 5-minute session, lid closed (no external display) → when the session ends the Mac goes to sleep (`pmset -g log | grep -i " Sleep "`).
+- [ ] Display Off → panel closes, the displays turn off about a second later, and the Mac stays awake (the countdown keeps running). When idle, it first starts a session with the selected duration.
 - [ ] Custom duration prompt accepts minutes input.
 - [ ] Switching Appearance in Preferences changes the menubar icon immediately.
 
@@ -119,15 +128,41 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 OpenCaffeine/
   App/                 # @main, AppDelegate (bootstrap)
   MenuBar/             # NSStatusItem controller, menu builder, countdown formatter, custom-duration prompt
-  Services/            # SleepAssertion, CaffeineSession, HotKeyService, BatteryMonitor, LoginItemManager, ScreenSaverLauncher
+  Services/            # SleepAssertion, CaffeineSession, DisplayOffAction, LidSleepController, HotKeyService, BatteryMonitor, LoginItemManager, ScreenSaverLauncher
   Settings/            # SwiftUI Preferences scene + tabs
-  Models/              # CaffeineDuration, SessionState, MenuBarIconStyle
+  Models/              # CaffeineDuration, SessionState, MenuBarIconStyle, LidSleepState
   Resources/           # Assets.xcassets, About panel
+OpenCaffeineHelper/    # Root helper for lid mode (runs `pmset -a disablesleep`) + its launchd plist
+Shared/                # XPC protocol + trust rules shared by the app and the helper
 OpenCaffeineTests/      # XCTest suites + Mocks/
 docs/superpowers/      # Spec + plan that drove this build
 project.yml            # XcodeGen project definition (single source of truth — .xcodeproj is regenerated, not committed)
 .swiftlint.yml         # Lint config (file_length 500 hard cap)
 ```
+
+## How lid mode works
+
+macOS sleeps a MacBook when its lid closes no matter which power assertions an
+app holds, so "Stay awake with lid closed" needs `pmset -a disablesleep`, which
+only root can set. Open Caffeine ships a small helper for that:
+
+- It is registered with `SMAppService.daemon` and only runs after you allow it in
+  System Settings › General › Login Items & Extensions.
+- It can do exactly one thing: run `/usr/bin/pmset -a disablesleep 1` or `0`.
+- It only accepts connections from Open Caffeine signed by the same team.
+- It turns sleep back on as soon as Open Caffeine disconnects (quit, crash,
+  force-quit), and again at the next start if the helper itself died.
+- macOS decides about sleep at the moment the lid closes. So whenever lid mode
+  ends while the lid is still shut (session over, low battery, heat, quit, or
+  crash), the Mac is put to sleep right away — unless macOS keeps it awake for an
+  external display on power (closed-display mode).
+- The app only asks for it while a session is running and the switch is on, and
+  lets the Mac sleep below 20% battery (on battery power) or when macOS reports
+  serious heat. When the lid closes with no external display, it also turns the
+  built-in display off.
+
+The helper needs a team-signed build, so lid mode is not part of the Mac App
+Store version (sandboxed apps may not request root).
 
 ## Architecture
 

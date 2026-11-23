@@ -24,8 +24,8 @@ final class SleepAssertion: SleepAssertionProviding {
     private let reason: String
     private let kind: () -> SleepAssertionKind
     private let api: PowerAssertionAPI
-    private var assertionID = IOPMAssertionID(0)
-    private(set) var isActive = false
+    private var assertionIDs: [IOPMAssertionID] = []
+    var isActive: Bool { !assertionIDs.isEmpty }
 
     init(
         reason: String = "Open Caffeine keeping system awake",
@@ -41,25 +41,34 @@ final class SleepAssertion: SleepAssertionProviding {
 
     func acquire() throws {
         if isActive { release() }
-        var newID: IOPMAssertionID = 0
-        let result = api.create(type: kind().ioKitAssertionType, reason: reason, id: &newID)
-        guard result == kIOReturnSuccess else {
-            log.error("IOPMAssertionCreateWithName failed: \(result, format: .decimal)")
-            throw SleepAssertionError.ioReturnFailure(result)
+        var acquired: [IOPMAssertionID] = []
+        for type in kind().ioKitAssertionTypes {
+            var newID: IOPMAssertionID = 0
+            let result = api.create(type: type, reason: reason, id: &newID)
+            guard result == kIOReturnSuccess else {
+                log.error("IOPMAssertionCreateWithName(\(type, privacy: .public)) failed: \(result, format: .decimal)")
+                releaseAll(acquired)  // don't leak the half of the pair that succeeded
+                throw SleepAssertionError.ioReturnFailure(result)
+            }
+            acquired.append(newID)
         }
-        assertionID = newID
-        isActive = true
-        log.notice("Acquired sleep assertion \(newID)")
+        assertionIDs = acquired
+        log.notice("Acquired sleep assertions \(String(describing: acquired), privacy: .public)")
     }
 
     func release() {
         guard isActive else { return }
-        let result = api.release(id: assertionID)
-        if result != kIOReturnSuccess {
-            log.error("IOPMAssertionRelease failed: \(result, format: .decimal)")
+        releaseAll(assertionIDs)
+        assertionIDs = []
+        log.notice("Released sleep assertions")
+    }
+
+    private func releaseAll(_ ids: [IOPMAssertionID]) {
+        for id in ids {
+            let result = api.release(id: id)
+            if result != kIOReturnSuccess {
+                log.error("IOPMAssertionRelease failed: \(result, format: .decimal)")
+            }
         }
-        assertionID = 0
-        isActive = false
-        log.notice("Released sleep assertion")
     }
 }

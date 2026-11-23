@@ -26,4 +26,31 @@ final class BatterySnapshotParserTests: XCTestCase {
         ]
         XCTAssertFalse(BatterySnapshotParser.parse(descriptions).hasBattery)
     }
+
+    private let halfFull: [[String: AnyObject]] = [[
+        kIOPSMaxCapacityKey: 100 as AnyObject,
+        kIOPSCurrentCapacityKey: 15 as AnyObject
+    ]]
+
+    func testPowerStatusOnBatteryCarriesTheCharge() {
+        XCTAssertEqual(
+            BatterySnapshotParser.powerStatus(providingType: kIOPSBatteryPowerValue, descriptions: halfFull),
+            PowerStatus(onBattery: true, batteryPercent: 15)
+        )
+    }
+
+    /// Plugged in, a low charge is climbing — not a reason to let the Mac sleep.
+    func testPowerStatusOnPowerAdapterIsNotOnBattery() {
+        XCTAssertEqual(
+            BatterySnapshotParser.powerStatus(providingType: kIOPSACPowerValue, descriptions: halfFull),
+            PowerStatus(onBattery: false, batteryPercent: 15)
+        )
+    }
+
+    func testPowerStatusWithUnknownSourceIsNotOnBattery() {
+        XCTAssertEqual(
+            BatterySnapshotParser.powerStatus(providingType: nil, descriptions: []),
+            PowerStatus(onBattery: false, batteryPercent: 0)
+        )
+    }
 }

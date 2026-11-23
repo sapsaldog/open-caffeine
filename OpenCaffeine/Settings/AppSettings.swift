@@ -13,6 +13,7 @@ final class AppSettings: ObservableObject {
         static let showCountdown = "showCountdown"
         static let hideCountdownSeconds = "hideCountdownSeconds"
         static let keepDisplayAwake = "keepDisplayAwake"
+        static let stayAwakeWithLidClosed = "stayAwakeWithLidClosed"
         static let appearanceMode = "appearanceMode"
         static let autoCheckUpdates = "autoCheckUpdates"
         static let updateChannel = "updateChannel"
@@ -31,6 +32,8 @@ final class AppSettings: ObservableObject {
     @AppStorage var hideCountdownSeconds: Bool
     /// When true, also prevents the display from sleeping (the screen stays on).
     @AppStorage var keepDisplayAwake: Bool
+    /// MacBooks: keep working with the lid closed while a session runs (needs the helper).
+    @AppStorage var stayAwakeWithLidClosed: Bool
     /// App appearance override: "auto" (default), "light", or "dark".
     @AppStorage var appearanceModeRaw: String
     /// Software-update preferences (UI only — no updater backend is wired yet).
@@ -54,6 +57,7 @@ final class AppSettings: ObservableObject {
         _showCountdown = AppStorage(wrappedValue: true, Key.showCountdown, store: store)
         _hideCountdownSeconds = AppStorage(wrappedValue: false, Key.hideCountdownSeconds, store: store)
         _keepDisplayAwake = AppStorage(wrappedValue: true, Key.keepDisplayAwake, store: store)
+        _stayAwakeWithLidClosed = AppStorage(wrappedValue: false, Key.stayAwakeWithLidClosed, store: store)
         _appearanceModeRaw = AppStorage(wrappedValue: AppearanceMode.auto.rawValue, Key.appearanceMode, store: store)
         _autoCheckUpdates = AppStorage(wrappedValue: true, Key.autoCheckUpdates, store: store)
         _updateChannelRaw = AppStorage(wrappedValue: UpdateChannel.stable.rawValue, Key.updateChannel, store: store)

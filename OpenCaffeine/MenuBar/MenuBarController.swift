@@ -6,6 +6,8 @@ import SwiftUI
 final class MenuBarController: NSObject {
     private let session: CaffeineSession
     private let settings: AppSettings
+    private let lidSleep: LidSleepController
+    private let hasLid: Bool
     private let statusItem: NSStatusItem
     private var panel: MenuPanelController!
     private var cancellables: Set<AnyCancellable> = []
@@ -17,11 +19,16 @@ final class MenuBarController: NSObject {
     var onPreferences: (() -> Void)?
     var onAbout: (() -> Void)?
     var onStartScreensaver: (() -> Void)?
+    var onDisplayOff: ((CaffeineDuration) -> Void)?
+    var onLidModeChange: ((Bool) -> Void)?
+    var onApproveLidHelper: (() -> Void)?
     var onCustomDurationRequested: (() -> Void)?
 
-    init(session: CaffeineSession, settings: AppSettings) {
+    init(session: CaffeineSession, settings: AppSettings, lidSleep: LidSleepController, hasLid: Bool) {
         self.session = session
         self.settings = settings
+        self.lidSleep = lidSleep
+        self.hasLid = hasLid
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
         configurePanel()
@@ -38,7 +45,12 @@ final class MenuBarController: NSObject {
             session: session,
             settings: settings,
             clock: clock,
+            lidSleep: lidSleep,
+            hasLid: hasLid,
             onScreensaver: { [weak self] in self?.onStartScreensaver?() },
+            onDisplayOff: { [weak self] duration in self?.onDisplayOff?(duration) },
+            onLidModeChange: { [weak self] isOn in self?.onLidModeChange?(isOn) },
+            onApproveLidHelper: { [weak self] in self?.onApproveLidHelper?() },
             onPreferences: { [weak self] in self?.onPreferences?() },
             onAbout: { [weak self] in self?.onAbout?() },
             onCustom: { [weak self] in self?.onCustomDurationRequested?() },
@@ -57,6 +69,10 @@ final class MenuBarController: NSObject {
 
     private func updateMenuBarImage() {
         statusItem.button?.image = CoffeeGlyphRenderer.image(settings.iconStyle)
+    }
+
+    func closePanel() {
+        panel.close()
     }
 
     @objc private func togglePanel() {

@@ -11,17 +11,17 @@ final class SleepAssertionKindTests: XCTestCase {
         XCTAssertEqual(SleepAssertionKind(keepDisplayAwake: false), .systemOnly)
     }
 
-    func testDisplayAndSystemUsesDisplayAssertionType() {
+    func testDisplayAndSystemHoldsDisplayAndSystemAssertionTypes() {
         XCTAssertEqual(
-            SleepAssertionKind.displayAndSystem.ioKitAssertionType,
-            kIOPMAssertPreventUserIdleDisplaySleep
+            SleepAssertionKind.displayAndSystem.ioKitAssertionTypes,
+            [kIOPMAssertPreventUserIdleDisplaySleep, kIOPMAssertPreventUserIdleSystemSleep]
         )
     }
 
-    func testSystemOnlyUsesSystemAssertionType() {
+    func testSystemOnlyHoldsOnlySystemAssertionType() {
         XCTAssertEqual(
-            SleepAssertionKind.systemOnly.ioKitAssertionType,
-            kIOPMAssertPreventUserIdleSystemSleep
+            SleepAssertionKind.systemOnly.ioKitAssertionTypes,
+            [kIOPMAssertPreventUserIdleSystemSleep]
         )
     }
 }

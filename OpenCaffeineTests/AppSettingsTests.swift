@@ -21,6 +21,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(settings.showCountdown)
         XCTAssertFalse(settings.hideCountdownSeconds)
         XCTAssertTrue(settings.keepDisplayAwake)
+        XCTAssertFalse(settings.stayAwakeWithLidClosed)
         XCTAssertEqual(settings.appearanceModeRaw, "auto")
         XCTAssertTrue(settings.autoCheckUpdates)
         XCTAssertEqual(settings.updateChannelRaw, "stable")
@@ -37,6 +38,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showCountdown = false
         settings.hideCountdownSeconds = true
         settings.keepDisplayAwake = false
+        settings.stayAwakeWithLidClosed = true
         settings.appearanceModeRaw = "dark"
         settings.autoCheckUpdates = false
         settings.updateChannelRaw = "beta"
@@ -50,6 +52,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(reloaded.showCountdown)
         XCTAssertTrue(reloaded.hideCountdownSeconds)
         XCTAssertFalse(reloaded.keepDisplayAwake)
+        XCTAssertTrue(reloaded.stayAwakeWithLidClosed)
         XCTAssertEqual(reloaded.appearanceModeRaw, "dark")
         XCTAssertFalse(reloaded.autoCheckUpdates)
         XCTAssertEqual(reloaded.updateChannelRaw, "beta")

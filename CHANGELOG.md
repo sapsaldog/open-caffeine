@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- "Display Off" button in the menu-bar panel. It turns the displays off right
+  away while the Mac keeps running, and starts a session first if none is
+  running.
+- "Stay awake with lid closed" switch on MacBooks: while a session runs, closing
+  the lid no longer puts the Mac to sleep. It needs a one-time approval of a small
+  helper in System Settings, turns the built-in display off when the lid closes,
+  and lets the Mac sleep below 20% battery or when it gets hot. Sleep comes back
+  on as soon as Open Caffeine quits or crashes, and if that happens while the lid
+  is closed, the Mac goes to sleep right away.
+
+### Changed
+- The panel's screen saver button is now a half-width "Screensaver" button next
+  to "Display Off", so the panel keeps its height.
+- With "Keep the screen on", Open Caffeine now also blocks system sleep
+  directly, so the Mac stays awake even after the display is turned off by
+  hand (Display Off, a hot corner, or a keyboard shortcut).
+
 ## [1.0.3] - 2026-11-12
 
 ### Added

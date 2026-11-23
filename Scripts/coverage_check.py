@@ -28,6 +28,7 @@ EXCLUDE = {
     "OpenCaffeine/MenuBar/CoffeeGlyph.swift",
     # NSAlert modal presenter: runModal() blocks the test runner.
     "OpenCaffeine/MenuBar/CustomDurationPrompt.swift",
+    "OpenCaffeine/MenuBar/LidModePrompt.swift",
     # Standard AppKit "About" panel presentation.
     "OpenCaffeine/Resources/AboutPanel.swift",
     # Declarative design tokens (fonts, radii) — no logic.
@@ -47,6 +48,10 @@ EXCLUDE = {
     "OpenCaffeine/Services/SystemAdapters.swift",
     "OpenCaffeine/Services/SystemBatteryProvider.swift",
     "OpenCaffeine/Services/ScreenSaverLauncher.swift",
+    # Lid mode shells: SMAppService + NSXPCConnection to the root helper, and IOKit
+    # clamshell notifications + CoreGraphics display list. Logic: LidSleepController.
+    "OpenCaffeine/Services/LidSleepHelperClient.swift",
+    "OpenCaffeine/Services/LidMonitor.swift",
     # Sparkle updater wrapper (SPUStandardUpdaterController).
     "OpenCaffeine/Services/UpdaterService.swift",
     # Usero feedback URLSession orchestration over tested transport builders/parsers.
