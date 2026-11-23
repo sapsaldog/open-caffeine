@@ -66,6 +66,16 @@ final class DisplayOffActionTests: XCTestCase {
         XCTAssertEqual(display.sleepCount, 0)
     }
 
+    /// The session ended during the delay (timer, low battery, hot key): with
+    /// nothing keeping the Mac awake, leave the display on rather than blank it.
+    func testLeavesTheDisplayOnIfTheSessionEndsDuringTheDelay() {
+        makeAction().perform(startingWith: .hours(2))
+        session.stop()
+        runPending()
+        XCTAssertEqual(display.sleepCount, 0)
+        XCTAssertEqual(session.state, .idle, "a stopped session stays stopped")
+    }
+
     func testSessionKeepsRunningWhenTheDisplayCannotSleep() {
         display.error = NSError(domain: "test", code: 2)
 

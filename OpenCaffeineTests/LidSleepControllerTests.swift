@@ -11,24 +11,29 @@ final class LidSleepControllerTests: XCTestCase {
     )
     private var helper: MockSleepDisabler!
     private var display: MockDisplaySleeper!
-    private var system: MockSystemSleeper!
-    /// What `Clamshell` would say: lid closed and macOS would sleep for it.
-    private var lidClosedAndShouldSleep = false
+    private var scheduled: [(delay: TimeInterval, work: () -> Void)] = []
     private var controller: LidSleepController!
 
     override func setUp() {
         super.setUp()
         helper = MockSleepDisabler()
         display = MockDisplaySleeper()
-        system = MockSystemSleeper()
+        scheduled = []
         controller = LidSleepController(
             conditions: { [unowned self] in self.conditions },
             helper: helper,
             display: display,
-            system: system,
-            closedLidShouldSleep: { [unowned self] in self.lidClosedAndShouldSleep }
+            schedule: { [unowned self] delay, work in self.scheduled.append((delay, work)) }
         )
     }
+
+    private func runScheduled() {
+        let work = scheduled
+        scheduled = []
+        work.forEach { $0.work() }
+    }
+
+    // MARK: Following the policy
 
     func testBlocksLidSleepWhenThePolicyAllowsIt() {
         controller.refresh()
@@ -68,32 +73,157 @@ final class LidSleepControllerTests: XCTestCase {
         XCTAssertEqual(helper.requests, [])
     }
 
-    /// A refusal must show, not leave the switch looking like it works.
-    func testReportsUnavailableWhenTheHelperRefuses() {
+    // MARK: One request at a time
+
+    func testShowsActiveOnlyOnceTheHelperConfirms() {
+        helper.defersReplies = true
+        controller.refresh()
+        XCTAssertEqual(controller.state, .off)
+        helper.reply(true)
+        XCTAssertEqual(controller.state, .active)
+    }
+
+    func testSendsOneRequestAtATime() {
+        helper.defersReplies = true
+        controller.refresh()
+        conditions.sessionActive = false
+        controller.refresh()
+        XCTAssertEqual(helper.requests, [true], "waits for the reply on the wire")
+        helper.reply(true)
+        XCTAssertEqual(helper.requests, [true, false])
+        helper.reply(true)
+        XCTAssertEqual(controller.state, .off)
+        XCTAssertEqual(helper.pendingReplies, 0)
+    }
+
+    /// Two quick toggles whose replies both fail must not leave the controller
+    /// thinking sleep is back while macOS still has it disabled.
+    func testOverlappingFailuresKeepTrackOfTheRealSetting() {
+        controller.refresh()
+        helper.defersReplies = true
+        conditions.sessionActive = false
+        controller.refresh()
+        conditions.sessionActive = true
+        controller.refresh()
+        helper.reply(false)
+        XCTAssertEqual(controller.state, .active, "the restore failed, so sleep is still blocked — as wanted now")
+
+        conditions.sessionActive = false
+        controller.refresh()
+        XCTAssertEqual(helper.requests, [true, false, false], "the change goes out right away")
+        helper.reply(true)
+        XCTAssertEqual(controller.state, .off)
+        runScheduled()
+        XCTAssertEqual(helper.requests, [true, false, false], "the old retry has nothing left to do")
+    }
+
+    func testALateReplyDoesNotOverrideANewerAnswer() {
+        helper.defersReplies = true
+        controller.refresh()
+        conditions.sessionActive = false
+        controller.refresh()
+        helper.reply(true)
+        XCTAssertEqual(helper.requests, [true, false])
+        XCTAssertEqual(controller.state, .off)
+        helper.reply(true)
+        XCTAssertEqual(controller.state, .off)
+        XCTAssertEqual(helper.pendingReplies, 0)
+    }
+
+    // MARK: Retrying
+
+    func testRetriesARefusedRequestWithGrowingDelays() {
         helper.accepts = false
         controller.refresh()
         XCTAssertEqual(controller.state, .unavailable)
+        XCTAssertEqual(scheduled.map(\.delay), [2])
+        runScheduled()
+        XCTAssertEqual(scheduled.map(\.delay), [4])
+        runScheduled()
+        XCTAssertEqual(scheduled.map(\.delay), [8])
+        helper.accepts = true
+        runScheduled()
+        XCTAssertEqual(controller.state, .active)
+        XCTAssertEqual(helper.requests, [true, true, true, true])
+        XCTAssertTrue(scheduled.isEmpty)
     }
 
-    func testTriesAgainAfterARefusal() {
+    func testRetryDelayStopsGrowingAtAMinute() {
         helper.accepts = false
         controller.refresh()
-        helper.accepts = true
-        controller.refresh()
-        XCTAssertEqual(controller.state, .active)
-        XCTAssertEqual(helper.requests, [true, true])
+        for _ in 0..<10 { runScheduled() }
+        XCTAssertEqual(scheduled.map(\.delay), [60])
     }
 
-    func testTriesAgainWhenPuttingSleepBackFailed() {
+    /// "Will retry" has to mean it: putting sleep back is retried on its own.
+    func testRetriesPuttingSleepBackAndSaysSoMeanwhile() {
         controller.refresh()
         helper.accepts = false
         conditions.sessionActive = false
         controller.refresh()
+        XCTAssertEqual(controller.state, .restoreFailed)
         helper.accepts = true
-        controller.refresh()
+        runScheduled()
         XCTAssertEqual(helper.requests, [true, false, false])
         XCTAssertEqual(controller.state, .off)
     }
+
+    /// The live scheduler: the retry really comes, on the main queue.
+    func testByDefaultRetriesOnTheMainQueue() {
+        let retried = expectation(description: "retried")
+        helper.accepts = false
+        helper.onRequest = { [unowned self] in
+            guard helper.requests.count == 2 else { return }
+            XCTAssertTrue(Thread.isMainThread)
+            retried.fulfill()
+        }
+        let liveController = LidSleepController(
+            conditions: { [unowned self] in self.conditions },
+            helper: helper,
+            display: display
+        )
+        liveController.refresh()
+        wait(for: [retried], timeout: 5)
+    }
+
+    func testDroppingTheIdeaCancelsTheRetry() {
+        helper.accepts = false
+        controller.refresh()
+        conditions.sessionActive = false
+        controller.refresh()
+        XCTAssertEqual(controller.state, .off, "sleep was never blocked")
+        runScheduled()
+        XCTAssertEqual(helper.requests, [true])
+    }
+
+    // MARK: Helper restarts
+
+    /// The helper crashed and launchd restarted it (it put sleep back while recovering).
+    func testReappliesTheHoldAfterTheHelperRestarts() {
+        controller.refresh()
+        controller.helperInterrupted()
+        XCTAssertEqual(helper.requests, [true, true])
+        XCTAssertEqual(controller.state, .active)
+    }
+
+    func testMakesSureSleepIsBackAfterARestartWhileOff() {
+        controller.refresh()
+        conditions.sessionActive = false
+        controller.refresh()
+        controller.helperInterrupted()
+        XCTAssertEqual(helper.requests, [true, false, false])
+    }
+
+    /// Unregistered or refused: the helper put sleep back on its way out.
+    func testAHelperThatIsGoneHoldsNothing() {
+        controller.refresh()
+        conditions.helperApproved = false
+        controller.helperInvalidated()
+        XCTAssertEqual(controller.state, .needsApproval)
+        XCTAssertEqual(helper.requests, [true])
+    }
+
+    // MARK: Closing the lid
 
     /// With nothing else lit, the built-in display goes dark instead of glowing under the lid.
     func testClosingTheLidTurnsTheDisplayOffWhileActive() {
@@ -122,79 +252,5 @@ final class LidSleepControllerTests: XCTestCase {
         controller.lidDidClose(externalDisplayCount: 0)
         XCTAssertEqual(display.sleepCount, 1)
         XCTAssertEqual(controller.state, .active)
-    }
-
-    func testRestoreSleepPutsSleepBackWhenItWasBlocked() {
-        controller.refresh()
-        controller.restoreSleep()
-        XCTAssertEqual(helper.requests, [true, false])
-    }
-
-    func testRestoreSleepLeavesMacOSAloneWhenNothingWasBlocked() {
-        controller.restoreSleep()
-        XCTAssertEqual(helper.requests, [])
-    }
-
-    // MARK: Lid mode ending while the lid is shut
-
-    /// macOS decides about sleep when the lid closes. If lid mode ends later with the
-    /// lid still shut (session over, low battery, heat), nothing may re-check it, so
-    /// the Mac is put to sleep — after sleep is allowed again, or the request does nothing.
-    func testSleepsTheMacWhenLidModeEndsWithTheLidClosed() {
-        controller.refresh()
-        lidClosedAndShouldSleep = true
-        system.onSleep = { XCTAssertEqual(self.helper.requests.last, false, "sleep must be allowed first") }
-        conditions.power = PowerStatus(onBattery: true, batteryPercent: 19)
-        controller.refresh()
-        XCTAssertEqual(helper.requests, [true, false])
-        XCTAssertEqual(system.sleepCount, 1)
-    }
-
-    func testSleepsTheMacWhenTheSessionEndsWithTheLidClosed() {
-        controller.refresh()
-        lidClosedAndShouldSleep = true
-        conditions.sessionActive = false
-        controller.refresh()
-        XCTAssertEqual(system.sleepCount, 1)
-    }
-
-    func testLeavesAnOpenLidAwake() {
-        controller.refresh()
-        conditions.sessionActive = false
-        controller.refresh()
-        XCTAssertEqual(system.sleepCount, 0)
-    }
-
-    func testDoesNotSleepWhenSleepCouldNotBeAllowedAgain() {
-        controller.refresh()
-        lidClosedAndShouldSleep = true
-        helper.accepts = false
-        conditions.sessionActive = false
-        controller.refresh()
-        XCTAssertEqual(system.sleepCount, 0)
-    }
-
-    func testNothingToSleepWhenLidModeNeverBlockedSleep() {
-        lidClosedAndShouldSleep = true
-        conditions.enabled = false
-        controller.refresh()
-        XCTAssertEqual(system.sleepCount, 0)
-    }
-
-    func testQuittingWithTheLidClosedAlsoSleepsTheMac() {
-        controller.refresh()
-        lidClosedAndShouldSleep = true
-        controller.restoreSleep()
-        XCTAssertEqual(system.sleepCount, 1)
-    }
-
-    func testSurvivesASystemSleepFailure() {
-        controller.refresh()
-        lidClosedAndShouldSleep = true
-        system.error = NSError(domain: "test", code: 3)
-        conditions.sessionActive = false
-        controller.refresh()
-        XCTAssertEqual(system.sleepCount, 1)
-        XCTAssertEqual(controller.state, .off)
     }
 }

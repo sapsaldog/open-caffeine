@@ -14,9 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var lidSleep = LidSleepController(
         conditions: { [unowned self] in self.lidConditions() },
         helper: lidHelper,
-        display: PMSetDisplaySleeper(),
-        system: PMSetSystemSleeper(),
-        closedLidShouldSleep: { Clamshell.current()?.shouldSleep ?? false }
+        display: PMSetDisplaySleeper()
     )
     private var lidMonitor: LidMonitor?
     private var approvalPoll: Timer?
@@ -45,8 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         session.stop()
-        // The helper also restores sleep on its own once this process is gone.
-        if hasLid { lidSleep.restoreSleep() }
+        // Lid mode needs nothing here: when this process's connection closes, the
+        // helper puts sleep back (and sleeps a Mac whose lid is shut).
     }
 
     func applyDockVisibility(_ visible: Bool) {
@@ -104,6 +102,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func installLidMode() {
         guard hasLid else { return }
+        lidHelper.onInterrupted = { [weak self] in self?.lidSleep.helperInterrupted() }
+        lidHelper.onInvalidated = { [weak self] in self?.lidSleep.helperInvalidated() }
         session.$state.receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshLidMode() }
             .store(in: &lidObservers)

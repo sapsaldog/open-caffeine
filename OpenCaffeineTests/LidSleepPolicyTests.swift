@@ -82,6 +82,8 @@ final class LidSleepPolicyTests: XCTestCase {
             "Paused — your Mac is too hot. Closing the lid will put your Mac to sleep."
         )
         XCTAssertEqual(LidSleepState.unavailable.caption, "Couldn't keep your Mac awake with the lid closed.")
+        XCTAssertEqual(LidSleepState.restoreFailed.caption, "Couldn't let your Mac sleep again yet — retrying.")
+        XCTAssertTrue(LidSleepState.restoreFailed.captionIsWarning)
         XCTAssertTrue(LidSleepState.paused(.lowBattery).captionIsWarning)
         XCTAssertTrue(LidSleepState.paused(.tooHot).captionIsWarning)
         XCTAssertTrue(LidSleepState.unavailable.captionIsWarning)

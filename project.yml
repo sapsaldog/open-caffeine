@@ -75,13 +75,14 @@ targets:
       # Xcode gives team-signed command-line tools a com.apple.application-identifier
       # entitlement. Without a provisioning profile macOS may refuse to launch the
       # helper (it runs as root under launchd), and it needs no entitlements at all.
-      # Re-sign the embedded copy bare; the app's own signature, made after this
+      # Re-sign the embedded copy without entitlements but keep its identifier and
+      # signing flags (hardened runtime); the app's own signature, made after this
       # phase, then seals that version.
       - name: Strip helper entitlements
         script: |
           helper="${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/OpenCaffeineHelper"
           codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" \
-            --identifier com.opencaffeine.OpenCaffeine.helper "$helper"
+            --preserve-metadata=identifier,flags,runtime "$helper"
         basedOnDependencyAnalysis: false
 
   # Root helper behind "Stay awake with lid closed": runs `pmset -a disablesleep`.

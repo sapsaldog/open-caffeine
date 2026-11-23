@@ -46,23 +46,6 @@ struct PMSetDisplaySleeper: DisplaySleeping {
     }
 }
 
-/// `pmset sleepnow`, like choosing Sleep from the Apple menu. The console user may
-/// run it without admin rights; a failure shows up only in the exit status.
-struct PMSetSystemSleeper: SystemSleeping {
-    private static let log = Logger(subsystem: "com.opencaffeine", category: "lid")
-
-    func sleepNow() throws {
-        let pmset = Process()
-        pmset.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
-        pmset.arguments = ["sleepnow"]
-        pmset.terminationHandler = { process in
-            guard process.terminationStatus != 0 else { return }
-            Self.log.error("pmset sleepnow exited with status \(process.terminationStatus)")
-        }
-        try pmset.run()
-    }
-}
-
 // MARK: - Login item (ServiceManagement)
 
 extension SMAppService: LoginItemControlling {

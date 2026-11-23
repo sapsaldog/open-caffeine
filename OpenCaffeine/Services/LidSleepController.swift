@@ -5,51 +5,82 @@ import os.log
 /// Seam over the privileged helper that flips `pmset disablesleep`. The live
 /// implementation is `LidSleepHelperClient`.
 protocol SleepDisabling: AnyObject {
-    /// `completion` runs on the main queue with whether macOS accepted the change.
+    /// `completion` runs on the main queue with whether macOS now matches the request.
     func setSleepDisabled(_ disabled: Bool, completion: @escaping (Bool) -> Void)
 }
 
-/// Seam over "put the Mac to sleep now". The live implementation lives in `SystemAdapters`.
-protocol SystemSleeping {
-    func sleepNow() throws
-}
-
-/// Applies "Stay awake with lid closed": asks the helper to block lid-close
-/// sleep while `LidSleepPolicy` allows it, puts sleep back the moment it doesn't,
-/// turns the built-in display off when the lid closes, and puts the Mac to sleep
-/// if lid mode ends while the lid is still shut.
+/// Applies "Stay awake with lid closed": asks the helper to block lid-close sleep
+/// while `LidSleepPolicy` allows it, puts sleep back the moment it doesn't, and
+/// turns the built-in display off when the lid closes.
+///
+/// macOS's setting is tracked as *desired* (from the policy), *confirmed* (by the
+/// helper), and *in flight*. One request at a time, so replies can't cross; a
+/// refused one is retried with backoff; a changed answer goes out right away.
+/// What happens to a shut lid when sleep comes back is the helper's job.
 final class LidSleepController: ObservableObject {
+    typealias Scheduler = (TimeInterval, @escaping () -> Void) -> Void
+
     @Published private(set) var state: LidSleepState = .off
 
     private let conditions: () -> LidSleepConditions
     private let helper: SleepDisabling
     private let display: DisplaySleeping
-    private let system: SystemSleeping
-    /// Lid closed and macOS would sleep for it (no closed-display mode).
-    private let closedLidShouldSleep: () -> Bool
-    /// What macOS was last told; the helper is only called when this changes.
-    private var sleepDisabled = false
+    private let schedule: Scheduler
     private let log = Logger(subsystem: "com.opencaffeine", category: "lid")
+
+    private var wanted: LidSleepState = .off
+    /// The `disablesleep` value the policy wants.
+    private var desired = false
+    /// What the helper last confirmed; `nil` once it restarted and nobody knows.
+    private var confirmed: Bool? = false
+    /// The request on the wire, if any.
+    private var inFlight: Bool?
+    /// Consecutive refused requests: drive the backoff and the warnings.
+    private var failures = 0
+    private var retryPending = false
+    /// Bumped to cancel a waiting retry.
+    private var retryGeneration = 0
 
     init(
         conditions: @escaping () -> LidSleepConditions,
         helper: SleepDisabling,
         display: DisplaySleeping,
-        system: SystemSleeping,
-        closedLidShouldSleep: @escaping () -> Bool
+        schedule: @escaping Scheduler = { delay, work in
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        }
     ) {
         self.conditions = conditions
         self.helper = helper
         self.display = display
-        self.system = system
-        self.closedLidShouldSleep = closedLidShouldSleep
+        self.schedule = schedule
     }
 
     /// Re-evaluates after any input changed: session, switch, power, heat, approval.
     func refresh() {
-        let wanted = LidSleepPolicy.state(for: conditions())
-        if state != wanted { state = wanted }
-        apply(disabled: wanted == .active)
+        wanted = LidSleepPolicy.state(for: conditions())
+        let wantsDisabled = wanted == .active
+        if wantsDisabled != desired {
+            desired = wantsDisabled
+            failures = 0
+            cancelRetry()  // a changed answer goes out now, not after the backoff
+        }
+        reconcile()
+        publish()
+    }
+
+    /// The helper crashed and launchd restarted it: what it holds is unknown now.
+    func helperInterrupted() {
+        confirmed = nil
+        cancelRetry()
+        reconcile()
+        publish()
+    }
+
+    /// The helper can't be reached anymore (unregistered or refused). It puts
+    /// sleep back on its way out, so it holds nothing for us.
+    func helperInvalidated() {
+        confirmed = false
+        refresh()
     }
 
     /// The lid just closed. With nothing else lit, make sure the built-in display
@@ -64,37 +95,54 @@ final class LidSleepController: ObservableObject {
         }
     }
 
-    /// Puts normal sleep back, e.g. when the app quits. (The helper also does this
-    /// on its own if the app disappears without saying goodbye.)
-    func restoreSleep() {
-        apply(disabled: false)
-    }
-
-    private func apply(disabled: Bool) {
-        guard disabled != sleepDisabled else { return }
-        sleepDisabled = disabled
-        helper.setSleepDisabled(disabled) { [weak self] accepted in
-            guard let self else { return }
-            guard accepted else {
-                log.error("Helper refused disablesleep=\(disabled, privacy: .public); will retry")
-                sleepDisabled = !disabled  // macOS kept its old setting
-                if disabled { state = .unavailable }
-                return
-            }
-            if !disabled { sleepIfLidIsClosed() }
+    private func reconcile() {
+        guard inFlight == nil, !retryPending, confirmed != desired else { return }
+        let value = desired
+        inFlight = value
+        helper.setSleepDisabled(value) { [weak self] accepted in
+            self?.finish(value, accepted: accepted)
         }
     }
 
-    /// macOS decides about sleep when the lid closes. Lid mode just ended with the
-    /// lid still shut (session over, low battery, heat, quitting), and nothing may
-    /// re-check it, so put the Mac to sleep as a closed lid normally would.
-    private func sleepIfLidIsClosed() {
-        guard closedLidShouldSleep() else { return }
-        log.notice("Lid mode ended with the lid closed; sleeping now")
-        do {
-            try system.sleepNow()
-        } catch {
-            log.error("Sleep request failed: \(String(describing: error), privacy: .public)")
+    private func finish(_ value: Bool, accepted: Bool) {
+        inFlight = nil
+        if accepted {
+            confirmed = value
+            failures = 0
+        } else {
+            failures += 1
+            log.error("Helper refused disablesleep=\(value, privacy: .public) (\(self.failures) in a row); retrying")
+            scheduleRetry()
         }
+        reconcile()
+        publish()
+    }
+
+    private func scheduleRetry() {
+        retryPending = true
+        let generation = retryGeneration
+        schedule(min(60, pow(2, Double(failures)))) { [weak self] in
+            guard let self, generation == retryGeneration else { return }
+            retryPending = false
+            reconcile()
+            publish()
+        }
+    }
+
+    private func cancelRetry() {
+        retryGeneration += 1
+        retryPending = false
+    }
+
+    private func publish() {
+        let shown: LidSleepState
+        if desired {
+            shown = confirmed == true ? .active : (failures > 0 ? .unavailable : .off)
+        } else if confirmed != false, failures > 0 {
+            shown = .restoreFailed
+        } else {
+            shown = wanted
+        }
+        if state != shown { state = shown }
     }
 }

@@ -12,6 +12,8 @@ enum LidSleepState: Equatable {
     case needsApproval
     /// The helper couldn't change the setting; the lid still sleeps the Mac.
     case unavailable
+    /// Lid mode ended but sleep couldn't be turned back on yet; retrying.
+    case restoreFailed
 }
 
 enum LidSleepPauseReason: Equatable {
@@ -34,13 +36,15 @@ extension LidSleepState {
             return "Paused — your Mac is too hot. \(sleepsAnyway)"
         case .unavailable:
             return "Couldn't keep your Mac awake with the lid closed."
+        case .restoreFailed:
+            return "Couldn't let your Mac sleep again yet — retrying."
         }
     }
 
     /// Warnings mean the lid will sleep the Mac after all; the approval hint doesn't.
     var captionIsWarning: Bool {
         switch self {
-        case .paused, .unavailable: return true
+        case .paused, .unavailable, .restoreFailed: return true
         case .off, .active, .needsApproval: return false
         }
     }

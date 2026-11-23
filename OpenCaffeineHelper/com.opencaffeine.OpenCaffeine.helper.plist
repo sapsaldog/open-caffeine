@@ -13,6 +13,11 @@
 	</dict>
 	<key>RunAtLoad</key>
 	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
 	<key>AssociatedBundleIdentifiers</key>
 	<array>
 		<string>com.opencaffeine.OpenCaffeine</string>

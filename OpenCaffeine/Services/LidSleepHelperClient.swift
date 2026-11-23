@@ -12,9 +12,14 @@ final class LidSleepHelperClient: SleepDisabling {
         case failed
     }
 
+    /// The helper crashed; launchd restarts it, but what it holds is unknown.
+    var onInterrupted: (() -> Void)?
+    /// The helper can't be reached anymore (unregistered or refused).
+    var onInvalidated: (() -> Void)?
+
     private let service = SMAppService.daemon(plistName: LidSleepHelper.plistName)
     private let log = Logger(subsystem: "com.opencaffeine", category: "lid")
-    /// Kept open while the app runs: the helper restores sleep when it closes.
+    /// Kept open while the app runs: when it closes, the helper puts sleep back.
     private var connection: NSXPCConnection?
 
     var isApproved: Bool { service.status == .enabled }
@@ -59,8 +64,14 @@ final class LidSleepHelperClient: SleepDisabling {
         if let requirement = LidSleepHelper.requirement(forPeer: LidSleepHelper.label) {
             connection.setCodeSigningRequirement(requirement)
         }
+        connection.interruptionHandler = { [weak self] in
+            DispatchQueue.main.async { self?.onInterrupted?() }
+        }
         connection.invalidationHandler = { [weak self] in
-            DispatchQueue.main.async { self?.connection = nil }
+            DispatchQueue.main.async {
+                self?.connection = nil
+                self?.onInvalidated?()
+            }
         }
         connection.resume()
         self.connection = connection

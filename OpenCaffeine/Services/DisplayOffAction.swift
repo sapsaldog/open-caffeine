@@ -12,7 +12,8 @@ protocol DisplaySleeping {
 /// A dark screen with no session could let the Mac fall asleep and stop the
 /// user's work, so when idle it starts a session first and leaves the screen on
 /// if that fails. The display sleeps after a short `delay` so the hand that just
-/// clicked doesn't nudge the mouse and wake it straight back up.
+/// clicked doesn't nudge the mouse and wake it straight back up — unless the
+/// session ended in the meantime, since then nothing would keep the Mac awake.
 struct DisplayOffAction {
     typealias Scheduler = (TimeInterval, @escaping () -> Void) -> Void
 
@@ -47,7 +48,11 @@ struct DisplayOffAction {
                 return
             }
         }
-        schedule(delay) { [display, log] in
+        schedule(delay) { [session, display, log] in
+            guard session.state.isActive else {
+                log.notice("Session ended before the display went dark; leaving it on")
+                return
+            }
             do {
                 try display.sleepDisplayNow()
             } catch {

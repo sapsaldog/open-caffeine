@@ -2,7 +2,8 @@
 """100% line-coverage gate for Open Caffeine's own logic files.
 
 Reads `xcrun xccov view --report --json` output on stdin and fails (exit 1) if any
-non-excluded source file under OpenCaffeine/ is below 100% line coverage.
+non-excluded source file under OpenCaffeine/ or Shared/ (code shared with the
+root helper) is below 100% line coverage.
 
 EXCLUDE holds UI / AppKit / system-shell files whose decision logic has been
 extracted into separately-tested types. Keep the list tight and justified — every
@@ -52,6 +53,10 @@ EXCLUDE = {
     # clamshell notifications + CoreGraphics display list. Logic: LidSleepController.
     "OpenCaffeine/Services/LidSleepHelperClient.swift",
     "OpenCaffeine/Services/LidMonitor.swift",
+    # Shared with the root helper: the XPC protocol + Security code-signing lookups,
+    # and the IOKit clamshell read. The helper's rules live in SleepHelperCore (tested).
+    "Shared/LidSleepHelperProtocol.swift",
+    "Shared/Clamshell.swift",
     # Sparkle updater wrapper (SPUStandardUpdaterController).
     "OpenCaffeine/Services/UpdaterService.swift",
     # Usero feedback URLSession orchestration over tested transport builders/parsers.
@@ -61,7 +66,7 @@ EXCLUDE = {
 
 def main():
     repo = os.environ.get("REPO", os.getcwd())
-    src_prefix = os.path.join(repo, "OpenCaffeine") + os.sep
+    src_prefixes = tuple(os.path.join(repo, folder) + os.sep for folder in ("OpenCaffeine", "Shared"))
     report = json.load(sys.stdin)
 
     failures = []
@@ -70,7 +75,7 @@ def main():
     for target in report.get("targets", []):
         for entry in target.get("files", []):
             path = entry["path"]
-            if not path.startswith(src_prefix):
+            if not path.startswith(src_prefixes):
                 continue  # third-party SPM sources, test target, etc.
             rel = os.path.relpath(path, repo)
             if rel in EXCLUDE:

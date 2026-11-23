@@ -74,7 +74,7 @@ xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'pl
 ## Coverage
 
 Every **logic** file must keep **100% line coverage**. The gate runs the suite with
-coverage and fails if any non-excluded file under `OpenCaffeine/` drops below 100%:
+coverage and fails if any non-excluded file under `OpenCaffeine/` or `Shared/` drops below 100%:
 
 ```bash
 Scripts/coverage-gate.sh
@@ -148,10 +148,16 @@ only root can set. Open Caffeine ships a small helper for that:
 
 - It is registered with `SMAppService.daemon` and only runs after you allow it in
   System Settings › General › Login Items & Extensions.
-- It can do exactly one thing: run `/usr/bin/pmset -a disablesleep 1` or `0`.
+- It can run exactly two commands: `/usr/bin/pmset -a disablesleep 1|0`, and
+  `/usr/bin/pmset sleepnow` right after sleep comes back while the lid is shut.
 - It only accepts connections from Open Caffeine signed by the same team.
-- It turns sleep back on as soon as Open Caffeine disconnects (quit, crash,
-  force-quit), and again at the next start if the helper itself died.
+- Sleep is one system-wide setting: it stays disabled while any Open Caffeine
+  connection holds it and comes back when the last one lets go — asks, quits,
+  crashes, or is force-quit. A restore that fails is retried until it works.
+- Before disabling sleep it writes a marker file, so if the helper itself dies,
+  launchd restarts it (`KeepAlive`) and the restart puts sleep back; the same
+  happens at boot. If launchd stops the helper (unregistered, shutdown), it puts
+  sleep back on its way out.
 - macOS decides about sleep at the moment the lid closes. So whenever lid mode
   ends while the lid is still shut (session over, low battery, heat, quit, or
   crash), the Mac is put to sleep right away — unless macOS keeps it awake for an
@@ -162,7 +168,18 @@ only root can set. Open Caffeine ships a small helper for that:
   built-in display off.
 
 The helper needs a team-signed build, so lid mode is not part of the Mac App
-Store version (sandboxed apps may not request root).
+Store version (sandboxed apps may not request root). Build team-signed copies with
+the hardened runtime and without `get-task-allow`, so other code can't borrow the
+app's identity to talk to the helper:
+
+```bash
+xcodebuild … -configuration Release \
+  CODE_SIGN_IDENTITY="<your signing identity>" DEVELOPMENT_TEAM=<team> CODE_SIGN_STYLE=Manual \
+  ENABLE_HARDENED_RUNTIME=YES CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
+```
+
+Ad-hoc builds can't use the hardened runtime: library validation then refuses the
+embedded `Sparkle.framework`, which has no team ID either.
 
 ## Architecture
 
