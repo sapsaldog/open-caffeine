@@ -9,7 +9,7 @@ import os.log
 
 private let log = Logger(subsystem: "com.opencaffeine.helper", category: "helper")
 
-/// Runs `/usr/bin/pmset` with fixed arguments and gives up after 5 s. Returns its
+/// Runs `/usr/bin/pmset` with fixed arguments and gives up after 3 s. Returns its
 /// standard output, or `nil` if it couldn't run, timed out, or exited non-zero.
 private func pmset(_ arguments: [String]) -> String? {
     let process = Process()
@@ -27,7 +27,7 @@ private func pmset(_ arguments: [String]) -> String? {
         return nil
     }
     let command = arguments.joined(separator: " ")
-    guard finished.wait(timeout: .now() + 5) == .success else {
+    guard finished.wait(timeout: .now() + 3) == .success else {
         process.terminate()
         log.error("pmset \(command, privacy: .public) timed out")
         return nil
@@ -86,11 +86,12 @@ private final class ListenerDelegate: NSObject, NSXPCListenerDelegate {
 
 private let control = PMSetSleepControl(
     marker: URL(fileURLWithPath: "/Library/Application Support/Open Caffeine/helper-disabled-sleep"),
-    checks: 20,
+    maxWait: 2,
     run: { pmset($0) != nil },
     readSleepDisabled: { RootDomain.sleepDisabled },
     readSavedSleepDisabled: { PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: pmset(["-g"])) },
     lidShouldSleep: { Clamshell.current()?.shouldSleep ?? false },
+    now: { Date() },
     pause: { Thread.sleep(forTimeInterval: $0) }
 )
 private let core = SleepHelperCore(control: control, retryInterval: 5) { delay, work in
@@ -104,7 +105,9 @@ core.onIdle = {
 // launchd sends SIGTERM when the helper is unregistered or the Mac shuts down, and
 // SIGKILL once ExitTimeOut (30 s in the plist) runs out: put sleep back within that
 // window, and exit non-zero if it couldn't be done (KeepAlive then restarts the
-// helper if it is still loaded; the marker covers the rest).
+// helper if it is still loaded; the marker covers the rest). Even with pmset hanging,
+// one attempt ends within about 8 s (3 s for pmset, up to 2 s of read-back, and 3 s
+// more for a read already under way), so three attempts 1 s apart fit in 30 s.
 signal(SIGTERM, SIG_IGN)
 private let termination = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
 termination.setEventHandler {

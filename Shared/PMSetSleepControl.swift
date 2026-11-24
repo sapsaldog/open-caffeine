@@ -13,32 +13,37 @@ final class PMSetSleepControl: SleepControlling {
     typealias Runner = ([String]) -> Bool
 
     private let marker: URL
-    private let checks: Int
+    private let maxWait: TimeInterval
     private let run: Runner
     private let readSleepDisabled: () -> Bool?
     private let readSavedSleepDisabled: () -> Bool?
     private let lidShouldSleep: () -> Bool
+    private let now: () -> Date
     private let pause: (TimeInterval) -> Void
     private let log = Logger(subsystem: "com.opencaffeine.helper", category: "helper")
 
     /// - Parameters:
-    ///   - checks: How many times to read the kernel's flag before giving up.
+    ///   - maxWait: How long to keep reading back after `pmset` returns before giving
+    ///     up. It bounds the whole wait however slow the reads are, so the helper
+    ///     can tell launchd how long a change may take.
     ///   - run: Runs `/usr/bin/pmset` with these arguments; `true` on exit status 0.
     init(
         marker: URL,
-        checks: Int,
+        maxWait: TimeInterval,
         run: @escaping Runner,
         readSleepDisabled: @escaping () -> Bool?,
         readSavedSleepDisabled: @escaping () -> Bool?,
         lidShouldSleep: @escaping () -> Bool,
+        now: @escaping () -> Date,
         pause: @escaping (TimeInterval) -> Void
     ) {
         self.marker = marker
-        self.checks = checks
+        self.maxWait = maxWait
         self.run = run
         self.readSleepDisabled = readSleepDisabled
         self.readSavedSleepDisabled = readSavedSleepDisabled
         self.lidShouldSleep = lidShouldSleep
+        self.now = now
         self.pause = pause
     }
 
@@ -69,12 +74,14 @@ final class PMSetSleepControl: SleepControlling {
 
     func setSleepDisabled(_ disabled: Bool) -> Bool {
         guard run(["-a", "disablesleep", disabled ? "1" : "0"]) else { return false }
-        for check in 1...checks {
+        let deadline = now().addingTimeInterval(maxWait)
+        while true {
             if readSleepDisabled() == disabled, readSavedSleepDisabled() == disabled {
                 log.notice("System sleep \(disabled ? "disabled" : "restored", privacy: .public)")
                 return true
             }
-            if check < checks { pause(0.1) }
+            guard now() < deadline else { break }
+            pause(0.1)
         }
         log.error("pmset exited 0 but SleepDisabled never settled at \(disabled, privacy: .public)")
         return false

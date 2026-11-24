@@ -13,6 +13,9 @@ final class PMSetSleepControlTests: XCTestCase {
     private var savedReadings: [Bool?]?
     private var savedReads = 0
     private var lidShouldSleep = false
+    /// A fake clock: pauses advance it, and so does each saved read by `savedReadCost`.
+    private var clock = Date(timeIntervalSince1970: 0)
+    private var savedReadCost: TimeInterval = 0
     private var control: PMSetSleepControl!
 
     override func setUpWithError() throws {
@@ -25,6 +28,8 @@ final class PMSetSleepControlTests: XCTestCase {
         savedReadings = nil
         savedReads = 0
         lidShouldSleep = false
+        clock = Date(timeIntervalSince1970: 0)
+        savedReadCost = 0
         control = makeControl(marker: folder.appendingPathComponent("Open Caffeine/helper-disabled-sleep"))
     }
 
@@ -36,7 +41,7 @@ final class PMSetSleepControlTests: XCTestCase {
     private func makeControl(marker: URL) -> PMSetSleepControl {
         PMSetSleepControl(
             marker: marker,
-            checks: 3,
+            maxWait: 0.25,
             run: { [unowned self] arguments in
                 commands.append(arguments)
                 return exitsCleanly
@@ -46,12 +51,14 @@ final class PMSetSleepControlTests: XCTestCase {
                 return readings[min(reads, readings.count - 1)]
             },
             readSavedSleepDisabled: { [unowned self] in
+                clock += savedReadCost
                 guard let savedReadings else { return readings[min(reads - 1, readings.count - 1)] }
                 defer { savedReads += 1 }
                 return savedReadings[min(savedReads, savedReadings.count - 1)]
             },
             lidShouldSleep: { [unowned self] in lidShouldSleep },
-            pause: { _ in }
+            now: { [unowned self] in clock },
+            pause: { [unowned self] seconds in clock += seconds }
         )
     }
 
@@ -72,7 +79,7 @@ final class PMSetSleepControlTests: XCTestCase {
     func testAZeroExitThatChangedNothingIsAFailure() {
         readings = [false]
         XCTAssertFalse(control.setSleepDisabled(true))
-        XCTAssertEqual(reads, 3, "checked a few times before giving up")
+        XCTAssertEqual(reads, 4, "checked every 0.1 s until the 0.25 s wait ran out")
     }
 
     func testWaitsBrieflyForTheKernelToCatchUp() {
@@ -92,6 +99,16 @@ final class PMSetSleepControlTests: XCTestCase {
         readings = [false, true]
         savedReadings = [false, true]
         XCTAssertTrue(control.setSleepDisabled(true))
+    }
+
+    /// Each pmset run has its own timeout; the wait as a whole must have one too, or
+    /// slow reads could outlast launchd's termination window.
+    func testStopsWaitingAtTheDeadlineEvenWhenReadsAreSlow() {
+        readings = [true]
+        savedReadings = [false]
+        savedReadCost = 5
+        XCTAssertFalse(control.setSleepDisabled(true))
+        XCTAssertEqual(savedReads, 1, "one slow read already passed the deadline")
     }
 
     func testANonZeroExitIsAFailureWithoutReadingBack() {
