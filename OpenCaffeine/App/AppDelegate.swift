@@ -14,7 +14,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var lidSleep = LidSleepController(
         conditions: { [unowned self] in self.lidConditions() },
         helper: lidHelper,
-        display: PMSetDisplaySleeper()
+        display: PMSetDisplaySleeper(),
+        sleepDisabledNow: { RootDomain.sleepDisabled }
     )
     private var lidMonitor: LidMonitor?
     private var approvalPoll: Timer?

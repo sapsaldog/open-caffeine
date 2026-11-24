@@ -42,12 +42,38 @@ final class SleepHelperCoreTests: XCTestCase {
         XCTAssertEqual(control.calls, ["writeMarker"])
     }
 
-    func testRemovesTheMarkerWhenDisablingFails() {
+    /// pmset can fail late, so a failed disable may still have applied: make sure
+    /// sleep is back before dropping the marker. Nothing was held, so no lid sleep.
+    func testAFailedDisableIsRolledBackBeforeTheMarkerGoes() {
+        control.disableWorks = false
+        core.connectionOpened()
+        XCTAssertFalse(core.request(true, by: 1))
+        XCTAssertEqual(control.calls, ["writeMarker", "disable", "restore", "removeMarker"])
+        XCTAssertFalse(control.hasMarker)
+    }
+
+    func testAFailedRollbackKeepsTheMarkerAndRetriesWithoutSleeping() {
         control.pmsetWorks = false
         core.connectionOpened()
         XCTAssertFalse(core.request(true, by: 1))
-        XCTAssertEqual(control.calls, ["writeMarker", "disable", "removeMarker"])
-        XCTAssertFalse(control.hasMarker)
+        XCTAssertTrue(control.hasMarker)
+        XCTAssertEqual(scheduled.map(\.delay), [5])
+        control.pmsetWorks = true
+        control.calls = []
+        runScheduled()
+        XCTAssertEqual(control.calls, ["restore", "removeMarker"])
+    }
+
+    func testARolledBackDisableStillFinishesAPendingReleaseProperly() {
+        core.connectionOpened()
+        _ = core.request(true, by: 1)
+        control.restoreWorks = false
+        _ = core.request(false, by: 1)
+        control.restoreWorks = true
+        control.disableWorks = false
+        control.calls = []
+        XCTAssertFalse(core.request(true, by: 1))
+        XCTAssertEqual(control.calls, ["writeMarker", "disable", "restore", "removeMarker", "sleepIfLidIsClosed"])
     }
 
     func testAFailedDisableLeavesNoHolderBehind() {
@@ -170,7 +196,7 @@ final class SleepHelperCoreTests: XCTestCase {
         _ = core.request(false, by: 1)
         control.calls = []
         XCTAssertFalse(core.request(true, by: 1))
-        XCTAssertEqual(control.calls, ["writeMarker", "disable"], "sleep may still be disabled")
+        XCTAssertEqual(control.calls, ["writeMarker", "disable", "restore"], "sleep may still be disabled")
         XCTAssertTrue(control.hasMarker)
     }
 
@@ -206,26 +232,72 @@ final class SleepHelperCoreTests: XCTestCase {
         XCTAssertEqual(idleCalls, 1)
     }
 
-    /// launchd stops the helper (unregistered, shutdown): put sleep back on the way out.
-    func testShuttingDownRestoresSleepItHolds() {
+    // MARK: Termination (SIGTERM)
+
+    private func terminate(attempts: Int = 3) -> Bool? {
+        var result: Bool?
+        core.terminate(attempts: attempts, retryInterval: 1) { result = $0 }
+        return result
+    }
+
+    /// An app still held sleep, so macOS keeps running (approval revoked): put sleep
+    /// back and let a shut lid sleep the Mac.
+    func testTerminatingPutsSleepBackAndSleepsAShutLidForAnActiveHold() {
         core.connectionOpened()
         _ = core.request(true, by: 1)
         control.calls = []
-        core.shutDown()
-        XCTAssertEqual(control.calls, ["restore", "removeMarker"])
+        XCTAssertEqual(terminate(), true)
+        XCTAssertEqual(control.calls, ["restore", "removeMarker", "sleepIfLidIsClosed"])
     }
 
-    func testShuttingDownWithNothingHeldLeavesSleepAlone() {
-        core.shutDown()
+    func testTerminatingWithNothingHeldLeavesSleepAlone() {
+        XCTAssertEqual(terminate(), true)
         XCTAssertEqual(control.calls, [])
     }
 
-    func testShuttingDownKeepsTheMarkerWhenRestoreFails() {
+    /// Nobody holds sleep (e.g. a system shutdown, apps already gone): restore a
+    /// leftover, but don't ask a shutting-down Mac to sleep.
+    func testTerminatingWithOnlyALeftoverMarkerRestoresWithoutSleeping() {
         control.hasMarker = true
-        control.pmsetWorks = false
-        core.shutDown()
-        XCTAssertEqual(control.calls, ["restore"])
+        XCTAssertEqual(terminate(), true)
+        XCTAssertEqual(control.calls, ["restore", "removeMarker"])
+    }
+
+    func testTerminatingRetriesBeforeGivingUp() {
+        core.connectionOpened()
+        _ = core.request(true, by: 1)
+        control.restoreWorks = false
+        var result: Bool?
+        core.terminate(attempts: 3, retryInterval: 1) { result = $0 }
+        XCTAssertNil(result)
+        XCTAssertEqual(scheduled.map(\.delay), [1])
+        runScheduled()
+        XCTAssertNil(result)
+        runScheduled()
+        XCTAssertEqual(result, false, "exit non-zero so launchd restarts it if still loaded")
         XCTAssertTrue(control.hasMarker)
+    }
+
+    func testTerminatingSucceedsOnARetry() {
+        core.connectionOpened()
+        _ = core.request(true, by: 1)
+        control.restoreWorks = false
+        var result: Bool?
+        core.terminate(attempts: 3, retryInterval: 1) { result = $0 }
+        control.restoreWorks = true
+        runScheduled()
+        XCTAssertEqual(result, true)
+        XCTAssertFalse(control.hasMarker)
+    }
+
+    func testRefusesNewHoldsWhileTerminating() {
+        core.connectionOpened()
+        _ = core.request(true, by: 1)
+        control.restoreWorks = false
+        core.terminate(attempts: 3, retryInterval: 1) { _ in }
+        control.calls = []
+        XCTAssertFalse(core.request(true, by: 2))
+        XCTAssertEqual(control.calls, [])
     }
 }
 
@@ -234,7 +306,18 @@ final class FakeSleepControl: SleepControlling {
     var calls: [String] = []
     var hasMarker = false
     var markerWritable = true
-    var pmsetWorks = true
+    var disableWorks = true
+    var restoreWorks = true
+    /// The setting as the fake kernel holds it.
+    private(set) var disabled = false
+
+    var pmsetWorks: Bool {
+        get { disableWorks && restoreWorks }
+        set {
+            disableWorks = newValue
+            restoreWorks = newValue
+        }
+    }
 
     func writeMarker() -> Bool {
         calls.append("writeMarker")
@@ -248,9 +331,11 @@ final class FakeSleepControl: SleepControlling {
         hasMarker = false
     }
 
-    func setSleepDisabled(_ disabled: Bool) -> Bool {
-        calls.append(disabled ? "disable" : "restore")
-        return pmsetWorks
+    func setSleepDisabled(_ value: Bool) -> Bool {
+        calls.append(value ? "disable" : "restore")
+        let works = value ? disableWorks : restoreWorks
+        if works { disabled = value }
+        return works
     }
 
     func sleepIfLidIsClosed() {

@@ -54,9 +54,11 @@ EXCLUDE = {
     "OpenCaffeine/Services/LidSleepHelperClient.swift",
     "OpenCaffeine/Services/LidMonitor.swift",
     # Shared with the root helper: the XPC protocol + Security code-signing lookups,
-    # and the IOKit clamshell read. The helper's rules live in SleepHelperCore (tested).
+    # and the IOKit root-domain reads (SleepDisabled, clamshell). The helper's rules
+    # live in SleepHelperCore and PMSetSleepControl (tested).
     "Shared/LidSleepHelperProtocol.swift",
     "Shared/Clamshell.swift",
+    "Shared/RootDomain.swift",
     # Sparkle updater wrapper (SPUStandardUpdaterController).
     "OpenCaffeine/Services/UpdaterService.swift",
     # Usero feedback URLSession orchestration over tested transport builders/parsers.

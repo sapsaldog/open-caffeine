@@ -151,13 +151,18 @@ only root can set. Open Caffeine ships a small helper for that:
 - It can run exactly two commands: `/usr/bin/pmset -a disablesleep 1|0`, and
   `/usr/bin/pmset sleepnow` right after sleep comes back while the lid is shut.
 - It only accepts connections from Open Caffeine signed by the same team.
+- A change only counts once the kernel reports it (IOPMrootDomain's
+  `SleepDisabled`): `pmset` can print an error and still exit 0.
 - Sleep is one system-wide setting: it stays disabled while any Open Caffeine
   connection holds it and comes back when the last one lets go — asks, quits,
   crashes, or is force-quit. A restore that fails is retried until it works.
-- Before disabling sleep it writes a marker file, so if the helper itself dies,
-  launchd restarts it (`KeepAlive`) and the restart puts sleep back; the same
-  happens at boot. If launchd stops the helper (unregistered, shutdown), it puts
-  sleep back on its way out.
+- Before disabling sleep it writes a marker file, removed only once sleep is
+  confirmed back. If the helper itself dies, launchd restarts it (`KeepAlive`)
+  and the restart puts sleep back; the same happens at boot. If launchd stops the
+  helper (unregistered, shutdown), it refuses new requests and retries putting
+  sleep back, exiting with an error if it can't (so launchd tries again).
+- If the helper goes away, the app checks the kernel's flag itself and warns when
+  sleep is still disabled.
 - macOS decides about sleep at the moment the lid closes. So whenever lid mode
   ends while the lid is still shut (session over, low battery, heat, quit, or
   crash), the Mac is put to sleep right away — unless macOS keeps it awake for an

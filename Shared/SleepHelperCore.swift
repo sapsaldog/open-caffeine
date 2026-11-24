@@ -1,13 +1,13 @@
 import Foundation
 
-/// What the root helper can do to the system. The live version runs `pmset` and
-/// keeps a marker file; tests pass a fake, so the helper's rules are unit-tested.
+/// What the root helper can do to the system. The live version is
+/// `PMSetSleepControl`; tests pass a fake, so the helper's rules are unit-tested.
 protocol SleepControlling: AnyObject {
     var hasMarker: Bool { get }
     /// Durably records "sleep may be disabled" before it is. `false` if it couldn't.
     func writeMarker() -> Bool
     func removeMarker()
-    /// `pmset -a disablesleep 1|0`; `false` if pmset failed.
+    /// Sets `disablesleep`; `true` only once the kernel reports the new value.
     func setSleepDisabled(_ disabled: Bool) -> Bool
     /// Puts the Mac to sleep if the lid is shut and macOS would sleep for that.
     func sleepIfLidIsClosed()
@@ -17,9 +17,10 @@ protocol SleepControlling: AnyObject {
 ///
 /// Sleep is one system-wide setting shared by every app connection: it is disabled
 /// while anyone holds it and restored when the last holder lets go (asks, quits,
-/// or crashes). A restore that fails is retried until it works, and the marker
-/// written before disabling lets the next launch undo a crash. macOS decides about
-/// sleep when the lid closes, so after restoring, a shut lid gets the Mac to sleep.
+/// or crashes). The marker is written before disabling and removed only once sleep
+/// is confirmed back, a failed restore is retried until it works, and a launch that
+/// finds a marker undoes the earlier run. macOS decides about sleep when the lid
+/// closes, so after an owned restore a shut lid gets the Mac to sleep.
 final class SleepHelperCore {
     typealias Scheduler = (TimeInterval, @escaping () -> Void) -> Void
 
@@ -32,7 +33,10 @@ final class SleepHelperCore {
     private var holders: Set<Int> = []
     private var openConnections = 0
     private var restorePending = false
+    /// Set by an owned release (or recovery): once sleep is back, sleep a shut lid.
+    private var sleepAfterRestore = false
     private var retryScheduled = false
+    private var terminating = false
 
     init(control: SleepControlling, retryInterval: TimeInterval, schedule: @escaping Scheduler) {
         self.control = control
@@ -43,7 +47,7 @@ final class SleepHelperCore {
     /// At launch: a marker left behind means an earlier run died with sleep disabled.
     func recover() {
         guard control.hasMarker else { return }
-        restore()
+        restore(sleepingAShutLid: true)
     }
 
     func connectionOpened() {
@@ -60,6 +64,7 @@ final class SleepHelperCore {
     /// - Returns: whether macOS now matches what this holder asked for.
     func request(_ disabled: Bool, by holder: Int) -> Bool {
         if disabled {
+            guard !terminating else { return false }
             guard !holders.contains(holder) else { return true }
             if holders.isEmpty {
                 guard disable() else { return false }
@@ -76,31 +81,66 @@ final class SleepHelperCore {
         onIdle()
     }
 
-    /// launchd is stopping the helper (unregistered, shutdown): put sleep back first.
-    func shutDown() {
-        guard !holders.isEmpty || restorePending || control.hasMarker else { return }
-        if control.setSleepDisabled(false) { control.removeMarker() }
+    /// launchd is stopping the helper (unregistered, shutdown). Refuse new holds,
+    /// put sleep back — retrying a few times — and report whether that worked, so
+    /// the process can exit non-zero (launchd restarts it if still loaded) when not.
+    ///
+    /// A shut lid is put to sleep only if an app still held sleep here: then macOS
+    /// keeps running (approval revoked). In a system shutdown apps are gone first.
+    func terminate(attempts: Int, retryInterval: TimeInterval, completion: @escaping (Bool) -> Void) {
+        terminating = true
+        let wasHeld = !holders.isEmpty
+        holders.removeAll()
+        guard wasHeld || restorePending || control.hasMarker else { return completion(true) }
+        attemptTermination(1, of: attempts, every: retryInterval, sleepingAShutLid: wasHeld, completion: completion)
+    }
+
+    private func attemptTermination(
+        _ attempt: Int,
+        of attempts: Int,
+        every interval: TimeInterval,
+        sleepingAShutLid: Bool,
+        completion: @escaping (Bool) -> Void
+    ) {
+        if control.setSleepDisabled(false) {
+            restorePending = false
+            sleepAfterRestore = false
+            control.removeMarker()
+            if sleepingAShutLid { control.sleepIfLidIsClosed() }
+            return completion(true)
+        }
+        restorePending = true
+        guard attempt < attempts else { return completion(false) }
+        schedule(interval) { [weak self] in
+            self?.attemptTermination(
+                attempt + 1, of: attempts, every: interval,
+                sleepingAShutLid: sleepingAShutLid, completion: completion
+            )
+        }
     }
 
     @discardableResult
     private func release(_ holder: Int) -> Bool {
         guard holders.remove(holder) != nil, holders.isEmpty else { return true }
-        return restore()
+        return restore(sleepingAShutLid: true)
     }
 
     private func disable() -> Bool {
         guard control.writeMarker() else { return false }
         guard control.setSleepDisabled(true) else {
-            // While a restore is still pending, sleep may well be disabled: keep the marker.
-            if !restorePending { control.removeMarker() }
+            // pmset can fail late, so it may have applied anyway: get sleep back
+            // (keeping the marker until that is confirmed). Nothing was held.
+            restore(sleepingAShutLid: false)
             return false
         }
         restorePending = false
+        sleepAfterRestore = false  // held again: a pending release no longer applies
         return true
     }
 
     @discardableResult
-    private func restore() -> Bool {
+    private func restore(sleepingAShutLid: Bool) -> Bool {
+        if sleepingAShutLid { sleepAfterRestore = true }
         guard control.setSleepDisabled(false) else {
             restorePending = true
             scheduleRetry()
@@ -108,7 +148,10 @@ final class SleepHelperCore {
         }
         restorePending = false
         control.removeMarker()
-        control.sleepIfLidIsClosed()
+        if sleepAfterRestore {
+            sleepAfterRestore = false
+            control.sleepIfLidIsClosed()
+        }
         return true
     }
 
@@ -119,7 +162,7 @@ final class SleepHelperCore {
             guard let self else { return }
             retryScheduled = false
             guard restorePending, holders.isEmpty else { return }
-            restore()
+            restore(sleepingAShutLid: false)
             idleCheck()
         }
     }

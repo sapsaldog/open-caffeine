@@ -25,6 +25,8 @@ final class LidSleepController: ObservableObject {
     private let conditions: () -> LidSleepConditions
     private let helper: SleepDisabling
     private let display: DisplaySleeping
+    /// The kernel's `SleepDisabled` flag, for when the helper is gone and can't say.
+    private let sleepDisabledNow: () -> Bool?
     private let schedule: Scheduler
     private let log = Logger(subsystem: "com.opencaffeine", category: "lid")
 
@@ -45,6 +47,7 @@ final class LidSleepController: ObservableObject {
         conditions: @escaping () -> LidSleepConditions,
         helper: SleepDisabling,
         display: DisplaySleeping,
+        sleepDisabledNow: @escaping () -> Bool?,
         schedule: @escaping Scheduler = { delay, work in
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
         }
@@ -52,6 +55,7 @@ final class LidSleepController: ObservableObject {
         self.conditions = conditions
         self.helper = helper
         self.display = display
+        self.sleepDisabledNow = sleepDisabledNow
         self.schedule = schedule
     }
 
@@ -76,10 +80,10 @@ final class LidSleepController: ObservableObject {
         publish()
     }
 
-    /// The helper can't be reached anymore (unregistered or refused). It puts
-    /// sleep back on its way out, so it holds nothing for us.
+    /// The helper can't be reached anymore (unregistered or refused). It should have
+    /// put sleep back on its way out; check the kernel's flag instead of assuming.
     func helperInvalidated() {
-        confirmed = false
+        confirmed = sleepDisabledNow()
         refresh()
     }
 
@@ -110,9 +114,14 @@ final class LidSleepController: ObservableObject {
             confirmed = value
             failures = 0
         } else {
-            failures += 1
-            log.error("Helper refused disablesleep=\(value, privacy: .public) (\(self.failures) in a row); retrying")
-            scheduleRetry()
+            // A refusal says nothing reliable about what this app still holds (the
+            // helper may already have let go of a failed release): ask, don't assume.
+            confirmed = nil
+            if value == desired {
+                failures += 1
+                log.error("Helper refused disablesleep=\(value, privacy: .public) (\(self.failures)x); retrying")
+                scheduleRetry()
+            }
         }
         reconcile()
         publish()

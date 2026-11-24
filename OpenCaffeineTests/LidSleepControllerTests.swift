@@ -12,6 +12,8 @@ final class LidSleepControllerTests: XCTestCase {
     private var helper: MockSleepDisabler!
     private var display: MockDisplaySleeper!
     private var scheduled: [(delay: TimeInterval, work: () -> Void)] = []
+    /// What the kernel's `SleepDisabled` flag reads.
+    private var kernelSleepDisabled: Bool? = false
     private var controller: LidSleepController!
 
     override func setUp() {
@@ -19,10 +21,12 @@ final class LidSleepControllerTests: XCTestCase {
         helper = MockSleepDisabler()
         display = MockDisplaySleeper()
         scheduled = []
+        kernelSleepDisabled = false
         controller = LidSleepController(
             conditions: { [unowned self] in self.conditions },
             helper: helper,
             display: display,
+            sleepDisabledNow: { [unowned self] in self.kernelSleepDisabled },
             schedule: { [unowned self] delay, work in self.scheduled.append((delay, work)) }
         )
     }
@@ -96,9 +100,9 @@ final class LidSleepControllerTests: XCTestCase {
         XCTAssertEqual(helper.pendingReplies, 0)
     }
 
-    /// Two quick toggles whose replies both fail must not leave the controller
-    /// thinking sleep is back while macOS still has it disabled.
-    func testOverlappingFailuresKeepTrackOfTheRealSetting() {
+    /// A failed release says nothing reliable about what this app still holds (the
+    /// helper may already have let go), so re-enabling asks for the hold again.
+    func testAFailedReleaseIsNotTakenAsAHoldStillInPlace() {
         controller.refresh()
         helper.defersReplies = true
         conditions.sessionActive = false
@@ -106,15 +110,47 @@ final class LidSleepControllerTests: XCTestCase {
         conditions.sessionActive = true
         controller.refresh()
         helper.reply(false)
-        XCTAssertEqual(controller.state, .active, "the restore failed, so sleep is still blocked — as wanted now")
+        XCTAssertEqual(helper.requests, [true, false, true], "the hold is asked for again, right away")
+        helper.reply(true)
+        XCTAssertEqual(controller.state, .active)
 
         conditions.sessionActive = false
         controller.refresh()
-        XCTAssertEqual(helper.requests, [true, false, false], "the change goes out right away")
         helper.reply(true)
         XCTAssertEqual(controller.state, .off)
         runScheduled()
-        XCTAssertEqual(helper.requests, [true, false, false], "the old retry has nothing left to do")
+        XCTAssertEqual(helper.requests, [true, false, true, false], "no stale retry left behind")
+    }
+
+    /// The reviewer's case end to end, through the helper's real rules: a release
+    /// fails, the session comes back before the helper retries, and that retry must
+    /// not put sleep back (or sleep the Mac) under an active switch.
+    func testReenablingAfterAFailedReleaseKeepsSleepBlockedEndToEnd() {
+        let power = FakeSleepControl()
+        var helperRetries: [() -> Void] = []
+        let core = SleepHelperCore(control: power, retryInterval: 5) { _, work in helperRetries.append(work) }
+        core.connectionOpened()
+        let endToEnd = LidSleepController(
+            conditions: { [unowned self] in self.conditions },
+            helper: InProcessHelper(core: core),
+            display: display,
+            sleepDisabledNow: { power.disabled },
+            schedule: { [unowned self] delay, work in self.scheduled.append((delay, work)) }
+        )
+        endToEnd.refresh()
+        power.restoreWorks = false
+        conditions.sessionActive = false
+        endToEnd.refresh()
+        XCTAssertEqual(endToEnd.state, .restoreFailed)
+
+        power.restoreWorks = true
+        conditions.sessionActive = true
+        endToEnd.refresh()
+        helperRetries.forEach { $0() }
+        runScheduled()
+        XCTAssertEqual(endToEnd.state, .active)
+        XCTAssertTrue(power.disabled)
+        XCTAssertFalse(power.calls.contains("sleepIfLidIsClosed"))
     }
 
     func testALateReplyDoesNotOverrideANewerAnswer() {
@@ -180,7 +216,8 @@ final class LidSleepControllerTests: XCTestCase {
         let liveController = LidSleepController(
             conditions: { [unowned self] in self.conditions },
             helper: helper,
-            display: display
+            display: display,
+            sleepDisabledNow: { false }
         )
         liveController.refresh()
         wait(for: [retried], timeout: 5)
@@ -189,14 +226,18 @@ final class LidSleepControllerTests: XCTestCase {
     func testDroppingTheIdeaCancelsTheRetry() {
         helper.accepts = false
         controller.refresh()
+        helper.accepts = true
         conditions.sessionActive = false
         controller.refresh()
-        XCTAssertEqual(controller.state, .off, "sleep was never blocked")
+        XCTAssertEqual(controller.state, .off)
         runScheduled()
-        XCTAssertEqual(helper.requests, [true])
+        XCTAssertEqual(helper.requests, [true, false], "one release to be sure, then nothing more")
     }
+}
 
-    // MARK: Helper restarts
+// MARK: - Helper restarts and the lid
+
+extension LidSleepControllerTests {
 
     /// The helper crashed and launchd restarted it (it put sleep back while recovering).
     func testReappliesTheHoldAfterTheHelperRestarts() {
@@ -214,13 +255,33 @@ final class LidSleepControllerTests: XCTestCase {
         XCTAssertEqual(helper.requests, [true, false, false])
     }
 
-    /// Unregistered or refused: the helper put sleep back on its way out.
-    func testAHelperThatIsGoneHoldsNothing() {
+    /// Unregistered or refused: trust the kernel's flag, not an assumption.
+    func testAHelperThatIsGoneAndPutSleepBackHoldsNothing() {
         controller.refresh()
         conditions.helperApproved = false
+        kernelSleepDisabled = false
         controller.helperInvalidated()
         XCTAssertEqual(controller.state, .needsApproval)
         XCTAssertEqual(helper.requests, [true])
+    }
+
+    func testAHelperThatIsGoneButLeftSleepDisabledIsShown() {
+        controller.refresh()
+        conditions.helperApproved = false
+        kernelSleepDisabled = true
+        helper.accepts = false
+        controller.helperInvalidated()
+        XCTAssertEqual(controller.state, .restoreFailed)
+        XCTAssertEqual(helper.requests, [true, false])
+    }
+
+    func testAnUnreadableFlagAfterTheHelperIsGoneIsTreatedAsUnknown() {
+        controller.refresh()
+        conditions.helperApproved = false
+        kernelSleepDisabled = nil
+        controller.helperInvalidated()
+        XCTAssertEqual(helper.requests, [true, false], "makes sure with a release")
+        XCTAssertEqual(controller.state, .needsApproval)
     }
 
     // MARK: Closing the lid
@@ -252,5 +313,18 @@ final class LidSleepControllerTests: XCTestCase {
         controller.lidDidClose(externalDisplayCount: 0)
         XCTAssertEqual(display.sleepCount, 1)
         XCTAssertEqual(controller.state, .active)
+    }
+}
+
+/// The app's controller wired straight to the helper's rules, as XPC would.
+private final class InProcessHelper: SleepDisabling {
+    private let core: SleepHelperCore
+
+    init(core: SleepHelperCore) {
+        self.core = core
+    }
+
+    func setSleepDisabled(_ disabled: Bool, completion: @escaping (Bool) -> Void) {
+        completion(core.request(disabled, by: 1))
     }
 }
