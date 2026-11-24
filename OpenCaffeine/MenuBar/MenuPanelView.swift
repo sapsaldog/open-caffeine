@@ -8,7 +8,14 @@ struct MenuPanelView: View {
     @ObservedObject var settings: AppSettings
     /// Ticks only while the panel is open (see `PanelClock`).
     @ObservedObject var clock: PanelClock
+    @ObservedObject var lidSleep: LidSleepController
+    /// MacBooks only: shows "Stay awake with lid closed".
+    var hasLid = false
     var onScreensaver: () -> Void = {}
+    /// Gets the selected duration, used to start a session if none is running.
+    var onDisplayOff: (CaffeineDuration) -> Void = { _ in }
+    var onLidModeChange: (Bool) -> Void = { _ in }
+    var onApproveLidHelper: () -> Void = {}
     var onPreferences: () -> Void = {}
     var onAbout: () -> Void = {}
     var onCustom: () -> Void = {}
@@ -29,8 +36,9 @@ struct MenuPanelView: View {
             header
             hero
             durationSection
-            screensaverRow
+            actionsRow
             keepDisplayAwakeRow
+            lidRow
             footer
         }
         .padding(16)
@@ -124,25 +132,21 @@ struct MenuPanelView: View {
         if active { try? session.start(duration) } else { selected = duration }
     }
 
-    // MARK: Screensaver + footer
+    // MARK: Actions + footer
 
-    private var screensaverRow: some View {
-        Button { dismiss(); onScreensaver() } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "moon").foregroundStyle(.secondary)
-                Text("Start Screensaver").font(.macControl).foregroundStyle(.primary)
-                Spacer()
-            }
-            .padding(.horizontal, 12).frame(height: 42)
-            .background(RoundedRectangle(cornerRadius: 10).fill(.primary.opacity(0.05)))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 0.5)
-            )
-            .contentShape(Rectangle())
+    /// One-shot actions that blank the screen, side by side. Both close the panel;
+    /// the switches below are settings that last for the session.
+    private var actionsRow: some View {
+        HStack(spacing: 6) {
+            ActionTile(
+                icon: "moon", title: "Screensaver", spokenTitle: "Start Screensaver",
+                help: "Starts the screen saver."
+            ) { dismiss(); onScreensaver() }
+            ActionTile(
+                icon: "display", title: "Display Off", spokenTitle: "Turn Display Off",
+                help: "Turns the display off now. Your Mac keeps running."
+            ) { dismiss(); onDisplayOff(selected) }
         }
-        .buttonStyle(.plain)
-        .focusable(false)
         .padding(.top, 12)
     }
 
@@ -157,6 +161,45 @@ struct MenuPanelView: View {
             ))
         }
         .padding(.top, 8)
+    }
+
+    /// Keep working with the lid closed. The caption only appears when something
+    /// needs the user's attention: approval, or a safety rule letting the Mac sleep.
+    @ViewBuilder private var lidRow: some View {
+        if hasLid {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text("Stay awake with lid closed").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                        .accessibilityHidden(true)  // the switch speaks this title itself
+                    Spacer()
+                    MacSwitch("Stay awake with lid closed", isOn: Binding(
+                        get: { settings.stayAwakeWithLidClosed },
+                        set: { onLidModeChange($0) }
+                    ))
+                }
+                lidCaption
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    @ViewBuilder private var lidCaption: some View {
+        if let caption = lidSleep.state.caption {
+            if lidSleep.state == .needsApproval {
+                Button { dismiss(); onApproveLidHelper() } label: {
+                    Text(caption).font(.system(size: 11)).foregroundStyle(Color.accentColor)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .buttonStyle(.plain)
+                .focusable(false)
+            } else {
+                Text(caption)
+                    .font(.system(size: 11))
+                    .foregroundStyle(lidSleep.state.captionIsWarning ? Color.orange : Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private var footer: some View {
@@ -288,6 +331,36 @@ private struct Chip: View {
         .focusable(false)
         .accessibilityLabel(spokenLabel)
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// A half-width action button. The visible title is short so two fit side by
+/// side; VoiceOver reads the full `spokenTitle`.
+private struct ActionTile: View {
+    let icon: String
+    let title: String
+    let spokenTitle: String
+    let help: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon).foregroundStyle(.secondary)
+                Text(title).font(.macControl).foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity).frame(height: 42)
+            .background(RoundedRectangle(cornerRadius: 10).fill(.primary.opacity(0.05)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 0.5)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .focusable(false)
+        .help(help)
+        .accessibilityLabel(spokenTitle)
     }
 }
 

@@ -34,6 +34,16 @@ final class BatteryMonitorTests: XCTestCase {
         XCTAssertFalse(fired)
     }
 
+    /// Unplugging or a new charge reading must reach the lid-sleep policy too.
+    func testReportsEveryPowerChange() {
+        let provider = FakeBatteryProvider(hasBattery: true, percent: 50)
+        var changes = 0
+        let monitor = BatteryMonitor(provider: provider, threshold: { 0 }, onLow: {}, onChange: { changes += 1 })
+        monitor.evaluate()
+        monitor.evaluate()
+        XCTAssertEqual(changes, 2)
+    }
+
     func testHandleNotificationWithNilContextIsNoOp() {
         BatteryMonitor.handleNotification(nil)
     }

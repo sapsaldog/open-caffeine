@@ -1,6 +1,8 @@
 included:
   - OpenCaffeine
+  - OpenCaffeineHelper
   - OpenCaffeineTests
+  - Shared
 
 file_length:
   warning: 400

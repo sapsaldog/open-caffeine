@@ -18,6 +18,8 @@ Built for Apple Silicon and macOS 26 (Tahoe) or newer with a native Liquid Glass
 
 - Timed sessions from 5 minutes to 8 hours, plus a keep-awake-forever mode
 - Separate control over display sleep and system sleep
+- Display Off: turn the screens off right away while the Mac keeps working
+- Stay awake with the lid closed (MacBooks, optional): keep working with the lid shut, with automatic safety cutoffs
 - Live menu-bar countdown and a customizable global shortcut
 - Optional battery threshold that stops an active session
 - Launch-at-login, Dock visibility, appearance, and menu-bar icon preferences
@@ -72,7 +74,7 @@ xcodebuild -project OpenCaffeine.xcodeproj -scheme OpenCaffeine -destination 'pl
 ## Coverage
 
 Every **logic** file must keep **100% line coverage**. The gate runs the suite with
-coverage and fails if any non-excluded file under `OpenCaffeine/` drops below 100%:
+coverage and fails if any non-excluded file under `OpenCaffeine/` or `Shared/` drops below 100%:
 
 ```bash
 Scripts/coverage-gate.sh
@@ -107,9 +109,16 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 - [ ] Start-at-login toggle survives reboot.
 - [ ] Show-in-dock toggle takes effect immediately.
 - [ ] Battery threshold triggers stop (use `pmset` if hard to drain).
-- [ ] `pmset -g assertions` shows `PreventUserIdleDisplaySleep` while active (or `…SystemSleep` when "Keep the screen on" is off).
+- [ ] `pmset -g assertions` shows both `PreventUserIdleDisplaySleep` and `PreventUserIdleSystemSleep` while active (only `…SystemSleep` when "Keep the screen on" is off).
 - [ ] About menu shows custom Open Caffeine panel.
-- [ ] Screensaver launches from menu.
+- [ ] Screensaver button launches the screen saver.
+- [ ] Desktop Mac (no lid) → no "Stay awake with lid closed" switch in the panel.
+- [ ] MacBook: turning on "Stay awake with lid closed" explains itself once, then opens System Settings to allow the helper; after allowing, the caption disappears.
+- [ ] MacBook, session running, lid mode on → `pmset -g | grep SleepDisabled` shows `1`; closing the lid keeps the work running and the built-in display dark. Stopping the session (or turning the switch off) → `0`.
+- [ ] MacBook, lid mode active → force-quit Open Caffeine → `SleepDisabled` goes back to `0` within seconds.
+- [ ] MacBook on battery below 20% → caption says it's paused and `SleepDisabled` is `0`; plugging in brings it back.
+- [ ] MacBook, lid mode on, 5-minute session, lid closed (no external display) → when the session ends the Mac goes to sleep (`pmset -g log | grep -i " Sleep "`).
+- [ ] Display Off → panel closes, the displays turn off about a second later, and the Mac stays awake (the countdown keeps running). When idle, it first starts a session with the selected duration.
 - [ ] Custom duration prompt accepts minutes input.
 - [ ] Switching Appearance in Preferences changes the menubar icon immediately.
 
@@ -119,15 +128,65 @@ adding one forces a conscious choice: test it, or extract its logic and list the
 OpenCaffeine/
   App/                 # @main, AppDelegate (bootstrap)
   MenuBar/             # NSStatusItem controller, menu builder, countdown formatter, custom-duration prompt
-  Services/            # SleepAssertion, CaffeineSession, HotKeyService, BatteryMonitor, LoginItemManager, ScreenSaverLauncher
+  Services/            # SleepAssertion, CaffeineSession, DisplayOffAction, LidSleepController, HotKeyService, BatteryMonitor, LoginItemManager, ScreenSaverLauncher
   Settings/            # SwiftUI Preferences scene + tabs
-  Models/              # CaffeineDuration, SessionState, MenuBarIconStyle
+  Models/              # CaffeineDuration, SessionState, MenuBarIconStyle, LidSleepState
   Resources/           # Assets.xcassets, About panel
+OpenCaffeineHelper/    # Root helper for lid mode (runs `pmset -a disablesleep`) + its launchd plist
+Shared/                # XPC protocol + trust rules shared by the app and the helper
 OpenCaffeineTests/      # XCTest suites + Mocks/
 docs/superpowers/      # Spec + plan that drove this build
 project.yml            # XcodeGen project definition (single source of truth — .xcodeproj is regenerated, not committed)
 .swiftlint.yml         # Lint config (file_length 500 hard cap)
 ```
+
+## How lid mode works
+
+macOS sleeps a MacBook when its lid closes no matter which power assertions an
+app holds, so "Stay awake with lid closed" needs `pmset -a disablesleep`, which
+only root can set. Open Caffeine ships a small helper for that:
+
+- It is registered with `SMAppService.daemon` and only runs after you allow it in
+  System Settings › General › Login Items & Extensions.
+- It can run exactly two commands: `/usr/bin/pmset -a disablesleep 1|0`, and
+  `/usr/bin/pmset sleepnow` right after sleep comes back while the lid is shut.
+- It only accepts connections from Open Caffeine signed by the same team.
+- A change only counts once both the saved setting (`pmset -g`) and the kernel
+  (IOPMrootDomain's `SleepDisabled`) show it: `pmset` can print an error and
+  still exit 0, and the two are applied separately.
+- Sleep is one system-wide setting: it stays disabled while any Open Caffeine
+  connection holds it and comes back when the last one lets go — asks, quits,
+  crashes, or is force-quit. A restore that fails is retried until it works.
+- Before disabling sleep it writes a marker file, removed only once sleep is
+  confirmed back. If the helper itself dies, launchd restarts it (`KeepAlive`)
+  and the restart puts sleep back; the same happens at boot. If launchd stops the
+  helper (unregistered, shutdown), it refuses new requests and retries putting
+  sleep back, exiting with an error if it can't (so launchd tries again).
+- If the helper goes away, the app asks a new one for the hold when it still wants
+  it, warns while the kernel says sleep is still disabled, and — if it keeps
+  running with the lid shut (approval revoked) — puts the Mac to sleep itself.
+- macOS decides about sleep at the moment the lid closes. So whenever lid mode
+  ends while the lid is still shut (session over, low battery, heat, quit, or
+  crash), the Mac is put to sleep right away — unless macOS keeps it awake for an
+  external display on power (closed-display mode).
+- The app only asks for it while a session is running and the switch is on, and
+  lets the Mac sleep below 20% battery (on battery power) or when macOS reports
+  serious heat. When the lid closes with no external display, it also turns the
+  built-in display off.
+
+The helper needs a team-signed build, so lid mode is not part of the Mac App
+Store version (sandboxed apps may not request root). Build team-signed copies with
+the hardened runtime and without `get-task-allow`, so other code can't borrow the
+app's identity to talk to the helper:
+
+```bash
+xcodebuild … -configuration Release \
+  CODE_SIGN_IDENTITY="<your signing identity>" DEVELOPMENT_TEAM=<team> CODE_SIGN_STYLE=Manual \
+  ENABLE_HARDENED_RUNTIME=YES CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
+```
+
+Ad-hoc builds can't use the hardened runtime: library validation then refuses the
+embedded `Sparkle.framework`, which has no team ID either.
 
 ## Architecture
 

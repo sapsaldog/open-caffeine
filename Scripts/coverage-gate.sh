@@ -2,7 +2,7 @@
 #
 # 100% line-coverage gate for Open Caffeine's logic files.
 # Regenerates the project, runs the test suite with coverage, and fails if any
-# non-excluded source file under OpenCaffeine/ is below 100% (see Scripts/coverage_check.py).
+# non-excluded source file under OpenCaffeine/ or Shared/ is below 100% (see Scripts/coverage_check.py).
 #
 # Usage:  Scripts/coverage-gate.sh
 set -euo pipefail

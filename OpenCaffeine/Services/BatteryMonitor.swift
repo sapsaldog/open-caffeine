@@ -6,6 +6,16 @@ protocol BatteryProvider {
     func currentBattery() -> (hasBattery: Bool, percent: Int)
 }
 
+/// Where the Mac draws power from, and the battery charge (0 without a battery).
+struct PowerStatus: Equatable {
+    var onBattery: Bool
+    var batteryPercent: Int
+}
+
+protocol PowerStatusProviding {
+    func currentPowerStatus() -> PowerStatus
+}
+
 /// Pure parsing of IOKit power-source descriptions into a battery snapshot.
 enum BatterySnapshotParser {
     static func parse(_ descriptions: [[String: AnyObject]]) -> (hasBattery: Bool, percent: Int) {
@@ -18,6 +28,11 @@ enum BatterySnapshotParser {
         }
         return (false, 0)
     }
+
+    /// - Parameter providingType: `IOPSGetProvidingPowerSourceType`, e.g. `kIOPSBatteryPowerValue`.
+    static func powerStatus(providingType: String?, descriptions: [[String: AnyObject]]) -> PowerStatus {
+        PowerStatus(onBattery: providingType == kIOPSBatteryPowerValue, batteryPercent: parse(descriptions).percent)
+    }
 }
 
 final class BatteryMonitor {
@@ -25,22 +40,26 @@ final class BatteryMonitor {
     private let provider: BatteryProvider
     private let threshold: () -> Int
     private let onLow: () -> Void
+    private let onChange: () -> Void
     private var runLoopSource: CFRunLoopSource?
 
     init(
         provider: BatteryProvider = SystemBatteryProvider(),
         threshold: @escaping () -> Int,
-        onLow: @escaping () -> Void
+        onLow: @escaping () -> Void,
+        onChange: @escaping () -> Void = {}
     ) {
         self.provider = provider
         self.threshold = threshold
         self.onLow = onLow
+        self.onChange = onChange
     }
 
     deinit { stopObserving() }
 
     /// Called synchronously by tests and by the IOPS callback (which runs on the main runloop).
     func evaluate() {
+        onChange()
         let snapshot = provider.currentBattery()
         let limit = threshold()
         guard limit > 0, snapshot.hasBattery, snapshot.percent < limit else { return }

@@ -3,18 +3,34 @@ import IOKit.pwr_mgt
 import XCTest
 
 final class SleepAssertionTests: XCTestCase {
+    private let display = kIOPMAssertPreventUserIdleDisplaySleep
+    private let system = kIOPMAssertPreventUserIdleSystemSleep
+
     func testAcquireSuccessActivates() throws {
         let api = FakePowerAssertionAPI()
         let assertion = SleepAssertion(reason: "test", api: api)
         XCTAssertFalse(assertion.isActive)
         try assertion.acquire()
         XCTAssertTrue(assertion.isActive)
-        XCTAssertEqual(api.createCount, 1)
+    }
+
+    /// The display assertion only blocks idle system sleep while it keeps the
+    /// display lit, so a session that keeps the display on holds both.
+    func testAcquireHoldsDisplayAndSystemAssertionsByDefault() throws {
+        let api = FakePowerAssertionAPI()
+        try SleepAssertion(api: api).acquire()
+        XCTAssertEqual(api.createdTypes, [display, system])
+    }
+
+    func testAcquireUsesSystemOnlyKindWhenRequested() throws {
+        let api = FakePowerAssertionAPI()
+        try SleepAssertion(kind: { .systemOnly }, api: api).acquire()
+        XCTAssertEqual(api.createdTypes, [system])
     }
 
     func testAcquireFailureThrowsAndStaysInactive() {
         let api = FakePowerAssertionAPI()
-        api.createResult = kIOReturnError
+        api.failingCreateCall = 1
         let assertion = SleepAssertion(api: api)
         XCTAssertThrowsError(try assertion.acquire()) { error in
             guard case SleepAssertionError.ioReturnFailure = error else {
@@ -24,28 +40,50 @@ final class SleepAssertionTests: XCTestCase {
         XCTAssertFalse(assertion.isActive)
     }
 
+    /// A half-acquired pair must not leak: the assertion already created would
+    /// keep the Mac awake with nothing left to release it.
+    func testPartialAcquireFailureReleasesWhatItCreated() {
+        let api = FakePowerAssertionAPI()
+        api.failingCreateCall = 2
+        let assertion = SleepAssertion(api: api)
+        XCTAssertThrowsError(try assertion.acquire())
+        XCTAssertFalse(assertion.isActive)
+        XCTAssertEqual(api.releasedIDs, [1])
+    }
+
     func testAcquireWhileActiveReleasesPrior() throws {
         let api = FakePowerAssertionAPI()
         let assertion = SleepAssertion(api: api)
         try assertion.acquire()
         try assertion.acquire()
-        XCTAssertEqual(api.releaseCount, 1)
+        XCTAssertEqual(api.releasedIDs, [1, 2])
         XCTAssertTrue(assertion.isActive)
     }
 
-    func testReleaseDeactivates() throws {
+    func testReacquireSwitchesToTheCurrentKind() throws {
+        let api = FakePowerAssertionAPI()
+        var kind = SleepAssertionKind.displayAndSystem
+        let assertion = SleepAssertion(kind: { kind }, api: api)
+        try assertion.acquire()
+        kind = .systemOnly
+        try assertion.acquire()
+        XCTAssertEqual(api.releasedIDs, [1, 2])
+        XCTAssertEqual(api.createdTypes, [display, system, system])
+    }
+
+    func testReleaseReleasesEveryAssertion() throws {
         let api = FakePowerAssertionAPI()
         let assertion = SleepAssertion(api: api)
         try assertion.acquire()
         assertion.release()
         XCTAssertFalse(assertion.isActive)
-        XCTAssertEqual(api.releaseCount, 1)
+        XCTAssertEqual(api.releasedIDs, [1, 2])
     }
 
     func testReleaseWhenInactiveIsNoOp() {
         let api = FakePowerAssertionAPI()
         SleepAssertion(api: api).release()
-        XCTAssertEqual(api.releaseCount, 0)
+        XCTAssertEqual(api.releasedIDs, [])
     }
 
     func testReleaseCompletesEvenWhenIOKitReportsFailure() throws {
@@ -55,47 +93,38 @@ final class SleepAssertionTests: XCTestCase {
         try assertion.acquire()
         assertion.release()
         XCTAssertFalse(assertion.isActive)
+        XCTAssertEqual(api.releasedIDs, [1, 2])
     }
 
-    func testDeinitReleasesActiveAssertion() throws {
+    func testDeinitReleasesActiveAssertions() throws {
         let api = FakePowerAssertionAPI()
         do {
             let assertion = SleepAssertion(api: api)
             try assertion.acquire()
         }
-        XCTAssertEqual(api.releaseCount, 1)
-    }
-
-    func testAcquireUsesDisplayKindByDefault() throws {
-        let api = FakePowerAssertionAPI()
-        try SleepAssertion(api: api).acquire()
-        XCTAssertEqual(api.lastType, kIOPMAssertPreventUserIdleDisplaySleep)
-    }
-
-    func testAcquireUsesSystemOnlyKindWhenRequested() throws {
-        let api = FakePowerAssertionAPI()
-        try SleepAssertion(kind: { .systemOnly }, api: api).acquire()
-        XCTAssertEqual(api.lastType, kIOPMAssertPreventUserIdleSystemSleep)
+        XCTAssertEqual(api.releasedIDs, [1, 2])
     }
 }
 
+/// Stands in for IOKit: hands out IDs 1, 2, 3… and records every call.
 final class FakePowerAssertionAPI: PowerAssertionAPI {
-    var createResult: IOReturn = kIOReturnSuccess
+    /// Makes the n-th `create` call (1-based) fail; `nil` means every call succeeds.
+    var failingCreateCall: Int?
     var releaseResult: IOReturn = kIOReturnSuccess
-    var assignedID: IOPMAssertionID = 7
-    private(set) var createCount = 0
-    private(set) var releaseCount = 0
-    private(set) var lastType: String?
+    private(set) var createdTypes: [String] = []
+    private(set) var releasedIDs: [IOPMAssertionID] = []
+    private var nextID: IOPMAssertionID = 1
 
     func create(type: String, reason: String, id: inout IOPMAssertionID) -> IOReturn {
-        createCount += 1
-        lastType = type
-        id = assignedID
-        return createResult
+        createdTypes.append(type)
+        if createdTypes.count == failingCreateCall { return kIOReturnError }
+        id = nextID
+        nextID += 1
+        return kIOReturnSuccess
     }
 
     func release(id: IOPMAssertionID) -> IOReturn {
-        releaseCount += 1
+        releasedIDs.append(id)
         return releaseResult
     }
 }
