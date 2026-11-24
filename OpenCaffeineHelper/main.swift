@@ -9,23 +9,34 @@ import os.log
 
 private let log = Logger(subsystem: "com.opencaffeine.helper", category: "helper")
 
-/// Runs `/usr/bin/pmset` with fixed arguments; `true` on exit status 0.
-private func runPMSet(_ arguments: [String]) -> Bool {
-    let pmset = Process()
-    pmset.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
-    pmset.arguments = arguments
+/// Runs `/usr/bin/pmset` with fixed arguments and gives up after 5 s. Returns its
+/// standard output, or `nil` if it couldn't run, timed out, or exited non-zero.
+private func pmset(_ arguments: [String]) -> String? {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+    process.arguments = arguments
+    let output = Pipe()
+    process.standardOutput = output
+    process.standardError = FileHandle.nullDevice
+    let finished = DispatchSemaphore(value: 0)
+    process.terminationHandler = { _ in finished.signal() }
     do {
-        try pmset.run()
+        try process.run()
     } catch {
         log.error("Could not run pmset: \(String(describing: error), privacy: .public)")
-        return false
+        return nil
     }
-    pmset.waitUntilExit()
-    guard pmset.terminationStatus == 0 else {
-        log.error("pmset \(arguments.joined(separator: " "), privacy: .public) exited \(pmset.terminationStatus)")
-        return false
+    let command = arguments.joined(separator: " ")
+    guard finished.wait(timeout: .now() + 5) == .success else {
+        process.terminate()
+        log.error("pmset \(command, privacy: .public) timed out")
+        return nil
     }
-    return true
+    guard process.terminationStatus == 0 else {
+        log.error("pmset \(command, privacy: .public) exited \(process.terminationStatus)")
+        return nil
+    }
+    return String(bytes: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)
 }
 
 /// One per app connection; hands requests to the core on the main queue.
@@ -76,8 +87,9 @@ private final class ListenerDelegate: NSObject, NSXPCListenerDelegate {
 private let control = PMSetSleepControl(
     marker: URL(fileURLWithPath: "/Library/Application Support/Open Caffeine/helper-disabled-sleep"),
     checks: 20,
-    run: runPMSet,
+    run: { pmset($0) != nil },
     readSleepDisabled: { RootDomain.sleepDisabled },
+    readSavedSleepDisabled: { PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: pmset(["-g"])) },
     lidShouldSleep: { Clamshell.current()?.shouldSleep ?? false },
     pause: { Thread.sleep(forTimeInterval: $0) }
 )
@@ -90,12 +102,13 @@ core.onIdle = {
 }
 
 // launchd sends SIGTERM when the helper is unregistered or the Mac shuts down, and
-// SIGKILL about 20 s later: put sleep back within that window, and exit non-zero if
-// it couldn't be done (KeepAlive then restarts the helper if it is still loaded).
+// SIGKILL once ExitTimeOut (30 s in the plist) runs out: put sleep back within that
+// window, and exit non-zero if it couldn't be done (KeepAlive then restarts the
+// helper if it is still loaded; the marker covers the rest).
 signal(SIGTERM, SIG_IGN)
 private let termination = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
 termination.setEventHandler {
-    core.terminate(attempts: 10, retryInterval: 1) { restored in
+    core.terminate(attempts: 3, retryInterval: 1) { restored in
         log.notice("Terminating; sleep \(restored ? "restored" : "could not be restored", privacy: .public)")
         exit(restored ? 0 : 1)
     }

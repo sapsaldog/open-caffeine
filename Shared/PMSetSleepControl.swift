@@ -4,9 +4,11 @@ import os.log
 /// The helper's `SleepControlling`: `pmset`, checked against the kernel, plus the
 /// marker file that lets a later launch undo a crash.
 ///
-/// `pmset` can print an error and still exit 0, so a change only counts once the
-/// root domain's `SleepDisabled` flag shows it. The system calls are injected so
-/// this is unit-tested; `OpenCaffeineHelper` passes the real ones.
+/// `pmset` can print an error and still exit 0, and powerd saves the setting and
+/// applies it to the kernel separately, so a change only counts once both the saved
+/// setting (`pmset -g`) and the root domain's `SleepDisabled` flag show it. The
+/// system calls are injected so this is unit-tested; `OpenCaffeineHelper` passes
+/// the real ones.
 final class PMSetSleepControl: SleepControlling {
     typealias Runner = ([String]) -> Bool
 
@@ -14,6 +16,7 @@ final class PMSetSleepControl: SleepControlling {
     private let checks: Int
     private let run: Runner
     private let readSleepDisabled: () -> Bool?
+    private let readSavedSleepDisabled: () -> Bool?
     private let lidShouldSleep: () -> Bool
     private let pause: (TimeInterval) -> Void
     private let log = Logger(subsystem: "com.opencaffeine.helper", category: "helper")
@@ -26,6 +29,7 @@ final class PMSetSleepControl: SleepControlling {
         checks: Int,
         run: @escaping Runner,
         readSleepDisabled: @escaping () -> Bool?,
+        readSavedSleepDisabled: @escaping () -> Bool?,
         lidShouldSleep: @escaping () -> Bool,
         pause: @escaping (TimeInterval) -> Void
     ) {
@@ -33,6 +37,7 @@ final class PMSetSleepControl: SleepControlling {
         self.checks = checks
         self.run = run
         self.readSleepDisabled = readSleepDisabled
+        self.readSavedSleepDisabled = readSavedSleepDisabled
         self.lidShouldSleep = lidShouldSleep
         self.pause = pause
     }
@@ -65,13 +70,24 @@ final class PMSetSleepControl: SleepControlling {
     func setSleepDisabled(_ disabled: Bool) -> Bool {
         guard run(["-a", "disablesleep", disabled ? "1" : "0"]) else { return false }
         for check in 1...checks {
-            if readSleepDisabled() == disabled {
+            if readSleepDisabled() == disabled, readSavedSleepDisabled() == disabled {
                 log.notice("System sleep \(disabled ? "disabled" : "restored", privacy: .public)")
                 return true
             }
             if check < checks { pause(0.1) }
         }
-        log.error("pmset exited 0 but the kernel still says SleepDisabled != \(disabled, privacy: .public)")
+        log.error("pmset exited 0 but SleepDisabled never settled at \(disabled, privacy: .public)")
+        return false
+    }
+
+    /// The saved `SleepDisabled` from `pmset -g` output, which lists it only once it
+    /// has been set. `nil` when there is no output to go by.
+    static func savedSleepDisabled(fromPMSetOutput output: String?) -> Bool? {
+        guard let output, !output.isEmpty else { return nil }
+        for line in output.split(separator: "\n") {
+            let fields = line.split(whereSeparator: { $0 == " " || $0 == "\t" })
+            if fields.first == "SleepDisabled" { return fields.dropFirst().first == "1" }
+        }
         return false
     }
 

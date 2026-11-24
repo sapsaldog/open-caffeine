@@ -85,37 +85,33 @@ final class SleepHelperCore {
     /// put sleep back — retrying a few times — and report whether that worked, so
     /// the process can exit non-zero (launchd restarts it if still loaded) when not.
     ///
-    /// A shut lid is put to sleep only if an app still held sleep here: then macOS
-    /// keeps running (approval revoked). In a system shutdown apps are gone first.
+    /// It never puts the Mac to sleep here: it can't tell a revoked approval (macOS
+    /// keeps running) from a shutdown. The app can, and sleeps a shut lid itself
+    /// when the helper goes away while it is still running.
     func terminate(attempts: Int, retryInterval: TimeInterval, completion: @escaping (Bool) -> Void) {
         terminating = true
         let wasHeld = !holders.isEmpty
         holders.removeAll()
         guard wasHeld || restorePending || control.hasMarker else { return completion(true) }
-        attemptTermination(1, of: attempts, every: retryInterval, sleepingAShutLid: wasHeld, completion: completion)
+        attemptTermination(1, of: attempts, every: retryInterval, completion: completion)
     }
 
     private func attemptTermination(
         _ attempt: Int,
         of attempts: Int,
         every interval: TimeInterval,
-        sleepingAShutLid: Bool,
         completion: @escaping (Bool) -> Void
     ) {
         if control.setSleepDisabled(false) {
             restorePending = false
             sleepAfterRestore = false
             control.removeMarker()
-            if sleepingAShutLid { control.sleepIfLidIsClosed() }
             return completion(true)
         }
         restorePending = true
         guard attempt < attempts else { return completion(false) }
         schedule(interval) { [weak self] in
-            self?.attemptTermination(
-                attempt + 1, of: attempts, every: interval,
-                sleepingAShutLid: sleepingAShutLid, completion: completion
-            )
+            self?.attemptTermination(attempt + 1, of: attempts, every: interval, completion: completion)
         }
     }
 

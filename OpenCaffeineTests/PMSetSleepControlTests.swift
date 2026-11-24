@@ -9,6 +9,9 @@ final class PMSetSleepControlTests: XCTestCase {
     /// What `SleepDisabled` reads, in order; the last value repeats.
     private var readings: [Bool?] = [true]
     private var reads = 0
+    /// What the saved setting (`pmset -g`) reads; `nil` = same as the kernel.
+    private var savedReadings: [Bool?]?
+    private var savedReads = 0
     private var lidShouldSleep = false
     private var control: PMSetSleepControl!
 
@@ -19,6 +22,8 @@ final class PMSetSleepControlTests: XCTestCase {
         exitsCleanly = true
         readings = [true]
         reads = 0
+        savedReadings = nil
+        savedReads = 0
         lidShouldSleep = false
         control = makeControl(marker: folder.appendingPathComponent("Open Caffeine/helper-disabled-sleep"))
     }
@@ -39,6 +44,11 @@ final class PMSetSleepControlTests: XCTestCase {
             readSleepDisabled: { [unowned self] in
                 defer { reads += 1 }
                 return readings[min(reads, readings.count - 1)]
+            },
+            readSavedSleepDisabled: { [unowned self] in
+                guard let savedReadings else { return readings[min(reads - 1, readings.count - 1)] }
+                defer { savedReads += 1 }
+                return savedReadings[min(savedReads, savedReadings.count - 1)]
             },
             lidShouldSleep: { [unowned self] in lidShouldSleep },
             pause: { _ in }
@@ -70,6 +80,20 @@ final class PMSetSleepControlTests: XCTestCase {
         XCTAssertTrue(control.setSleepDisabled(true))
     }
 
+    /// A rollback that didn't save, while the kernel still shows the old value, must
+    /// not pass: the saved setting would re-apply later with nothing left to undo it.
+    func testTheSavedSettingHasToMatchToo() {
+        readings = [false]
+        savedReadings = [true]
+        XCTAssertFalse(control.setSleepDisabled(false))
+    }
+
+    func testBothSettledIsASuccess() {
+        readings = [false, true]
+        savedReadings = [false, true]
+        XCTAssertTrue(control.setSleepDisabled(true))
+    }
+
     func testANonZeroExitIsAFailureWithoutReadingBack() {
         exitsCleanly = false
         XCTAssertFalse(control.setSleepDisabled(true))
@@ -79,6 +103,24 @@ final class PMSetSleepControlTests: XCTestCase {
     func testAnUnreadableFlagIsAFailure() {
         readings = [nil]
         XCTAssertFalse(control.setSleepDisabled(false))
+    }
+
+    // MARK: Reading `pmset -g`
+
+    func testReadsTheSavedFlagFromPmsetOutput() {
+        let set = "System-wide power settings:\n SleepDisabled\t\t1\nCurrently in use:\n sleep 0\n"
+        XCTAssertEqual(PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: set), true)
+        XCTAssertEqual(PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: " SleepDisabled 0\n"), false)
+    }
+
+    /// pmset only lists SleepDisabled once it has been set.
+    func testAMissingLineMeansNotDisabled() {
+        XCTAssertEqual(PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: "Currently in use:\n sleep 0\n"), false)
+    }
+
+    func testNoOutputIsUnknown() {
+        XCTAssertNil(PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: nil))
+        XCTAssertNil(PMSetSleepControl.savedSleepDisabled(fromPMSetOutput: ""))
     }
 
     // MARK: Marker file

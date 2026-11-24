@@ -231,23 +231,39 @@ final class SleepHelperCoreTests: XCTestCase {
         core.connectionClosed(1)
         XCTAssertEqual(idleCalls, 1)
     }
+}
 
-    // MARK: Termination (SIGTERM)
+// MARK: - Termination (SIGTERM)
 
+extension SleepHelperCoreTests {
     private func terminate(attempts: Int = 3) -> Bool? {
         var result: Bool?
         core.terminate(attempts: attempts, retryInterval: 1) { result = $0 }
         return result
     }
 
-    /// An app still held sleep, so macOS keeps running (approval revoked): put sleep
-    /// back and let a shut lid sleep the Mac.
-    func testTerminatingPutsSleepBackAndSleepsAShutLidForAnActiveHold() {
+    /// Put sleep back, but leave sleeping a shut lid to the app: the helper can't tell
+    /// a revoked approval (macOS keeps running) from a shutdown; the app can.
+    func testTerminatingPutsSleepBackWithoutSleepingTheMac() {
         core.connectionOpened()
         _ = core.request(true, by: 1)
         control.calls = []
         XCTAssertEqual(terminate(), true)
-        XCTAssertEqual(control.calls, ["restore", "removeMarker", "sleepIfLidIsClosed"])
+        XCTAssertEqual(control.calls, ["restore", "removeMarker"])
+    }
+
+    func testTerminatingDuringAPendingReleaseStillRestores() {
+        core.connectionOpened()
+        _ = core.request(true, by: 1)
+        control.restoreWorks = false
+        _ = core.request(false, by: 1)
+        control.restoreWorks = true
+        control.calls = []
+        XCTAssertEqual(terminate(), true)
+        XCTAssertEqual(control.calls, ["restore", "removeMarker"])
+        control.calls = []
+        runScheduled()
+        XCTAssertEqual(control.calls, [], "the pending retry has nothing left to do")
     }
 
     func testTerminatingWithNothingHeldLeavesSleepAlone() {
@@ -255,9 +271,7 @@ final class SleepHelperCoreTests: XCTestCase {
         XCTAssertEqual(control.calls, [])
     }
 
-    /// Nobody holds sleep (e.g. a system shutdown, apps already gone): restore a
-    /// leftover, but don't ask a shutting-down Mac to sleep.
-    func testTerminatingWithOnlyALeftoverMarkerRestoresWithoutSleeping() {
+    func testTerminatingWithOnlyALeftoverMarkerRestores() {
         control.hasMarker = true
         XCTAssertEqual(terminate(), true)
         XCTAssertEqual(control.calls, ["restore", "removeMarker"])

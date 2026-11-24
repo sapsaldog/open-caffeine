@@ -15,6 +15,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         conditions: { [unowned self] in self.lidConditions() },
         helper: lidHelper,
         display: PMSetDisplaySleeper(),
+        system: PMSetSystemSleeper(),
+        closedLidShouldSleep: { Clamshell.current()?.shouldSleep ?? false },
         sleepDisabledNow: { RootDomain.sleepDisabled }
     )
     private var lidMonitor: LidMonitor?
@@ -43,6 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        if hasLid { lidSleep.appWillTerminate() }
         session.stop()
         // Lid mode needs nothing here: when this process's connection closes, the
         // helper puts sleep back (and sleeps a Mac whose lid is shut).

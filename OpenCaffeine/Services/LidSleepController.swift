@@ -9,6 +9,11 @@ protocol SleepDisabling: AnyObject {
     func setSleepDisabled(_ disabled: Bool, completion: @escaping (Bool) -> Void)
 }
 
+/// Seam over "put the Mac to sleep now". The live implementation lives in `SystemAdapters`.
+protocol SystemSleeping {
+    func sleepNow() throws
+}
+
 /// Applies "Stay awake with lid closed": asks the helper to block lid-close sleep
 /// while `LidSleepPolicy` allows it, puts sleep back the moment it doesn't, and
 /// turns the built-in display off when the lid closes.
@@ -16,7 +21,8 @@ protocol SleepDisabling: AnyObject {
 /// macOS's setting is tracked as *desired* (from the policy), *confirmed* (by the
 /// helper), and *in flight*. One request at a time, so replies can't cross; a
 /// refused one is retried with backoff; a changed answer goes out right away.
-/// What happens to a shut lid when sleep comes back is the helper's job.
+/// What happens to a shut lid when sleep comes back is the helper's job — except
+/// when the helper itself goes away while the app keeps running.
 final class LidSleepController: ObservableObject {
     typealias Scheduler = (TimeInterval, @escaping () -> Void) -> Void
 
@@ -25,7 +31,10 @@ final class LidSleepController: ObservableObject {
     private let conditions: () -> LidSleepConditions
     private let helper: SleepDisabling
     private let display: DisplaySleeping
-    /// The kernel's `SleepDisabled` flag, for when the helper is gone and can't say.
+    private let system: SystemSleeping
+    /// Lid shut and macOS would sleep for it (not closed-display mode).
+    private let closedLidShouldSleep: () -> Bool
+    /// The kernel's `SleepDisabled` flag: decides whether sleep is really still off.
     private let sleepDisabledNow: () -> Bool?
     private let schedule: Scheduler
     private let log = Logger(subsystem: "com.opencaffeine", category: "lid")
@@ -42,11 +51,14 @@ final class LidSleepController: ObservableObject {
     private var retryPending = false
     /// Bumped to cancel a waiting retry.
     private var retryGeneration = 0
+    private var appTerminating = false
 
     init(
         conditions: @escaping () -> LidSleepConditions,
         helper: SleepDisabling,
         display: DisplaySleeping,
+        system: SystemSleeping,
+        closedLidShouldSleep: @escaping () -> Bool,
         sleepDisabledNow: @escaping () -> Bool?,
         schedule: @escaping Scheduler = { delay, work in
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
@@ -55,6 +67,8 @@ final class LidSleepController: ObservableObject {
         self.conditions = conditions
         self.helper = helper
         self.display = display
+        self.system = system
+        self.closedLidShouldSleep = closedLidShouldSleep
         self.sleepDisabledNow = sleepDisabledNow
         self.schedule = schedule
     }
@@ -80,11 +94,29 @@ final class LidSleepController: ObservableObject {
         publish()
     }
 
-    /// The helper can't be reached anymore (unregistered or refused). It should have
-    /// put sleep back on its way out; check the kernel's flag instead of assuming.
+    /// The helper can't be reached anymore (unregistered or refused). What this app
+    /// holds is unknown now: a wanted hold is asked for again from a new connection.
+    ///
+    /// If the app keeps running (approval revoked, not quitting or a shutdown) and
+    /// the lid is shut with sleep back, nothing may re-check the lid, so put the Mac
+    /// to sleep as the closed lid would have.
     func helperInvalidated() {
-        confirmed = sleepDisabledNow()
+        confirmed = nil
+        if !appTerminating, closedLidShouldSleep(), sleepDisabledNow() == false {
+            log.notice("Helper gone with the lid shut; sleeping now")
+            do {
+                try system.sleepNow()
+            } catch {
+                log.error("Sleep request failed: \(String(describing: error), privacy: .public)")
+            }
+        }
         refresh()
+    }
+
+    /// The app is quitting (or the Mac shutting down): the helper connection is about
+    /// to close for that reason, which is no cause to put the Mac to sleep.
+    func appWillTerminate() {
+        appTerminating = true
     }
 
     /// The lid just closed. With nothing else lit, make sure the built-in display
@@ -147,7 +179,7 @@ final class LidSleepController: ObservableObject {
         let shown: LidSleepState
         if desired {
             shown = confirmed == true ? .active : (failures > 0 ? .unavailable : .off)
-        } else if confirmed != false, failures > 0 {
+        } else if confirmed != false, failures > 0, sleepDisabledNow() != false {
             shown = .restoreFailed
         } else {
             shown = wanted
