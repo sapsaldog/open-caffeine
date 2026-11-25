@@ -29,7 +29,7 @@ Built for Apple Silicon and macOS 26 (Tahoe) or newer with a native Liquid Glass
 
 Download the latest archive from [GitHub Releases](https://github.com/sapsaldog/open-caffeine/releases/latest), extract it, and move **Open Caffeine.app** to `/Applications`.
 
-Open Caffeine releases are EdDSA-signed for Sparkle update integrity, but the app is not Apple code-signed or notarized. On first launch, macOS may require **System Settings → Privacy & Security → Open Anyway**.
+Releases are signed with Developer ID and notarized by Apple (since 1.1.0), so macOS opens them normally. Sparkle updates are also EdDSA-signed and checked before they install. (1.0.x releases weren't notarized: on first launch macOS asked for **System Settings → Privacy & Security → Open Anyway**.)
 
 ## Build from source
 
@@ -58,9 +58,14 @@ are EdDSA-signed with the private key in your login keychain (public key is in
 To cut a release:
 
 1. Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in `project.yml`.
-2. Run `Scripts/release.sh` — builds Release, zips, EdDSA-signs, and regenerates `appcast.xml`.
-3. Create a GitHub release tagged `v<version>` and upload `dist/Open-Caffeine-<version>.zip`.
-4. Commit & push `appcast.xml`.
+2. Run `Scripts/release.sh` — builds Release, signs it with Developer ID, has
+   Apple notarize it, zips, EdDSA-signs, and regenerates `appcast.xml`. It needs a
+   "Developer ID Application" certificate of the team and notarytool credentials
+   saved as `open-caffeine-notary`; the top of the script shows how to set up both.
+3. Commit the version bump, `CHANGELOG.md`, and `appcast.xml` as `Release v<version>`,
+   tag that commit `v<version>`, push the tag, and create the GitHub release from it
+   with `dist/Open-Caffeine-<version>.zip` attached.
+4. Push `main`: the committed `appcast.xml` is what `SUFeedURL` serves.
 
 The **Updates** preferences tab ("Check Now" + automatic checks) drives the real
 Sparkle updater against that feed.
@@ -174,10 +179,11 @@ only root can set. Open Caffeine ships a small helper for that:
   serious heat. When the lid closes with no external display, it also turns the
   built-in display off.
 
-The helper needs a team-signed build, so lid mode is not part of the Mac App
-Store version (sandboxed apps may not request root). Build team-signed copies with
-the hardened runtime and without `get-task-allow`, so other code can't borrow the
-app's identity to talk to the helper:
+The helper needs a team-signed build. Releases are signed with Developer ID, so
+lid mode works in them; it is not part of the Mac App Store version (sandboxed
+apps may not request root). Build your own team-signed copies with the hardened
+runtime and without `get-task-allow`, so other code can't borrow the app's
+identity to talk to the helper:
 
 ```bash
 xcodebuild … -configuration Release \

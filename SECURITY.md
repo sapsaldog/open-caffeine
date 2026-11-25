@@ -34,5 +34,5 @@ prefer to remain anonymous.
 Automatic updates are delivered through [Sparkle](https://sparkle-project.org)
 and are **EdDSA-signed**. The public key (`SUPublicEDKey`) is embedded in the
 app's `Info.plist`, and Sparkle verifies every downloaded update against it, so
-a tampered or unsigned update will be rejected. The app is currently distributed
-unsigned (local/personal builds), so macOS Gatekeeper may quarantine downloads.
+a tampered or unsigned update will be rejected. Since 1.1.0, releases are also
+signed with Developer ID and notarized by Apple, so Gatekeeper checks them too.

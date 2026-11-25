@@ -72,8 +72,9 @@ See the README's "Coverage" section for the rationale.
 ## Releases
 
 Releases are cut with the `Scripts/release.sh` flow (version bump in
-`project.yml`, signed Sparkle appcast, GitHub release). Most contributors don't
-need to touch this — maintainers handle release tagging.
+`project.yml`, Developer ID signing and notarization, signed Sparkle appcast,
+GitHub release). Most contributors don't need to touch this — maintainers
+handle release tagging.
 
 ## Reporting bugs & requesting features
 

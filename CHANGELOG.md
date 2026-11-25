@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - With "Keep the screen on", Open Caffeine now also blocks system sleep
   directly, so the Mac stays awake even after the display is turned off by
   hand (Display Off, a hot corner, or a keyboard shortcut).
+- Releases are signed with Developer ID and notarized by Apple, so macOS opens a
+  downloaded copy without System Settings › Privacy & Security › Open Anyway.
+
+### Fixed
+- Release builds no longer include code-coverage instrumentation.
 
 ## [1.0.3] - 2026-11-12
 
