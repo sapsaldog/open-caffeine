@@ -3,12 +3,12 @@
     <channel>
         <title>Open Caffeine</title>
         <item>
-            <title>1.0.3</title>
-            <pubDate>Thu, 12 Nov 2026 14:19:09 -0600</pubDate>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
+            <title>1.1.0</title>
+            <pubDate>Wed, 25 Nov 2026 00:02:55 -0600</pubDate>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/sapsaldog/open-caffeine/releases/download/v1.0.3/Open-Caffeine-1.0.3.zip" length="3718654" type="application/octet-stream" sparkle:edSignature="yOcQIHZoo6Nx+eQ4tc6WYp+CSSTPDrKp4kWOxbjgcHkZ0c7iFn15Igme+vp1i67JrgNeTOVywm+H0YGTRdTfBg=="/>
+            <enclosure url="https://github.com/sapsaldog/open-caffeine/releases/download/v1.1.0/Open-Caffeine-1.1.0.zip" length="3630660" type="application/octet-stream" sparkle:edSignature="c0Q0mq0azklqU4XiOmxXbc+2CJIjWIYZwaWLEplLGDgdfNWrhv1RwYg3I9Oc/ENJcyTvtWOUBEVR/vXavPkcBA=="/>
         </item>
     </channel>
 </rss>

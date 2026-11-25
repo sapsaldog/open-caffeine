@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-25
+
 ### Added
 - "Display Off" button in the menu-bar panel. It turns the displays off right
   away while the Mac keeps running, and starts a session first if none is
@@ -69,6 +71,7 @@ First public release.
 - Start screensaver action.
 - Automatic updates via Sparkle, served from an EdDSA-signed appcast.
 
-[Unreleased]: https://github.com/sapsaldog/open-caffeine/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/sapsaldog/open-caffeine/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/sapsaldog/open-caffeine/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/sapsaldog/open-caffeine/compare/v1.0.2...v1.0.3
 [1.0.0]: https://github.com/sapsaldog/open-caffeine/releases/tag/v1.0.0
