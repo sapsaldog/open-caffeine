@@ -52,8 +52,8 @@ private struct AboutView: View {
                 .padding(.bottom, 14)
                 .accessibilityHidden(true)  // decorative: the name is right below it
 
-            Text("Open Caffeine").font(.system(size: 22, weight: .bold))
-            Text("Version \(version) (\(build))")
+            Text(verbatim: "Open Caffeine").font(.system(size: 22, weight: .bold))
+            Text("Version \(version) (\(build))", comment: "About window; version and build number")
                 .font(.system(size: 12)).foregroundStyle(.secondary)
 
             Text("An open-source menu-bar app that keeps your Mac awake for as long as you need.")
@@ -63,7 +63,8 @@ private struct AboutView: View {
                 .padding(.top, 12)
                 .frame(maxWidth: 236)
 
-            Text("Created by Hoon Choi\nReleased under the MIT License")
+            Text("Created by Hoon Choi\nReleased under the MIT License",
+                 comment: "About window credits; keep the person's name in Latin script")
                 .font(.system(size: 12))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -77,7 +78,7 @@ private struct AboutView: View {
             .padding(.top, 20)
 
             Spacer(minLength: 0)
-            Text("github.com/sapsaldog/open-caffeine")
+            Text(verbatim: "github.com/sapsaldog/open-caffeine")
                 .font(.system(size: 10.5)).foregroundStyle(.tertiary)
                 .padding(.top, 18)
         }

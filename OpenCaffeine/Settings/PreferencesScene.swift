@@ -14,10 +14,10 @@ struct PreferencesScene: View {
         case general, battery, updates, feedback
         var title: String {
             switch self {
-            case .general: return "General"
-            case .battery: return "Duration & Battery"
-            case .updates: return "Updates"
-            case .feedback: return "Feedback"
+            case .general: return String(localized: "General", comment: "Settings page title")
+            case .battery: return String(localized: "Duration & Battery", comment: "Settings page title")
+            case .updates: return String(localized: "Updates", comment: "Settings page title")
+            case .feedback: return String(localized: "Feedback", comment: "Settings page title")
             }
         }
     }
@@ -42,21 +42,22 @@ struct PreferencesScene: View {
                 Image("AppGlyph").resizable().frame(width: 34, height: 34)
                     .accessibilityHidden(true)  // decorative: the name is right next to it
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Open Caffeine").font(.system(size: 13, weight: .semibold))
-                    Text("Version \(appVersion)").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text(verbatim: "Open Caffeine").font(.system(size: 13, weight: .semibold))
+                    Text("Version \(appVersion)", comment: "Settings sidebar; argument is the app version")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
 
             VStack(spacing: 2) {
-                NavRow(title: "General", systemImage: "gearshape", tint: .gray,
+                NavRow(title: PrefPage.general.title, systemImage: "gearshape", tint: .gray,
                        selected: page == .general) { page = .general }
-                NavRow(title: "Duration & Battery", systemImage: "clock", tint: .indigo,
+                NavRow(title: PrefPage.battery.title, systemImage: "clock", tint: .indigo,
                        selected: page == .battery) { page = .battery }
-                NavRow(title: "Updates", systemImage: "arrow.down.circle", tint: .green,
+                NavRow(title: PrefPage.updates.title, systemImage: "arrow.down.circle", tint: .green,
                        selected: page == .updates) { page = .updates }
-                NavRow(title: "Feedback", systemImage: "text.bubble", tint: .pink,
+                NavRow(title: PrefPage.feedback.title, systemImage: "text.bubble", tint: .pink,
                        selected: page == .feedback) { page = .feedback }
             }
             .padding(.horizontal, 10)

@@ -75,13 +75,17 @@ private struct BatteryThresholdRow: View {
                     hasBattery: snapshot.hasBattery,
                     percent: settings.sleepBelowBatteryPercent
                 ))
-            Text(snapshot.hasBattery
-                 ? "On battery power, Open Caffeine steps aside so your Mac can sleep and protect its charge."
-                 : "No battery detected.")
+            footnote(hasBattery: snapshot.hasBattery)
                 .font(.system(size: 11))
                 .foregroundStyle(snapshot.hasBattery ? Color.secondary : Color.red)
         }
         .padding(14)
+    }
+
+    private func footnote(hasBattery: Bool) -> Text {
+        hasBattery
+            ? Text("On battery power, Open Caffeine steps aside so your Mac can sleep and protect its charge.")
+            : Text("No battery detected.")
     }
 
     private var percentBinding: Binding<Double> {

@@ -5,6 +5,9 @@ import Foundation
 enum BatteryThresholdFormatter {
     static func label(hasBattery: Bool, percent: Int) -> String {
         guard hasBattery else { return "—" }
-        return percent == 0 ? "Disabled" : "\(percent)%"
+        guard percent != 0 else {
+            return String(localized: "Disabled", comment: "Battery threshold value: low-battery auto-stop is off")
+        }
+        return "\(percent)%"
     }
 }

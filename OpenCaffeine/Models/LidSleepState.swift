@@ -24,20 +24,39 @@ enum LidSleepPauseReason: Equatable {
 extension LidSleepState {
     /// The line under the switch; `nil` when there's nothing to say.
     var caption: String? {
-        let sleepsAnyway = "Closing the lid will put your Mac to sleep."
+        let sleepsAnyway = String(
+            localized: "Closing the lid will put your Mac to sleep.",
+            comment: "Lid-closed caption: appended after a 'Paused — …' reason"
+        )
         switch self {
         case .off, .active:
             return nil
         case .needsApproval:
-            return "Allow Open Caffeine in System Settings to finish setting this up."
+            return String(
+                localized: "Allow Open Caffeine in System Settings to finish setting this up.",
+                comment: "Lid-closed caption: the privileged helper still needs approval in Login Items"
+            )
         case .paused(.lowBattery):
-            return "Paused — battery is below \(LidSleepPolicy.minimumBatteryPercent)%. \(sleepsAnyway)"
+            let percent = LidSleepPolicy.minimumBatteryPercent
+            return String(
+                localized: "Paused — battery is below \(percent)%. \(sleepsAnyway)",
+                comment: "Lid-closed caption: %lld is the battery percent; %@ is 'Closing the lid will put your Mac…'"
+            )
         case .paused(.tooHot):
-            return "Paused — your Mac is too hot. \(sleepsAnyway)"
+            return String(
+                localized: "Paused — your Mac is too hot. \(sleepsAnyway)",
+                comment: "Lid-closed caption: %@ is 'Closing the lid will put your Mac to sleep.'"
+            )
         case .unavailable:
-            return "Couldn't keep your Mac awake with the lid closed."
+            return String(
+                localized: "Couldn't keep your Mac awake with the lid closed.",
+                comment: "Lid-closed caption: the helper failed to block lid-close sleep"
+            )
         case .restoreFailed:
-            return "Couldn't let your Mac sleep again yet — retrying."
+            return String(
+                localized: "Couldn't let your Mac sleep again yet — retrying.",
+                comment: "Lid-closed caption: re-enabling sleep failed and will be retried"
+            )
         }
     }
 

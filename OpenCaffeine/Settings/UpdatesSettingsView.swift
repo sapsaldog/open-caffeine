@@ -51,7 +51,7 @@ struct UpdatesSettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Open Caffeine is up to date")
                     .font(.system(size: 14, weight: .semibold))
-                Text("Version \(version) · Last checked \(lastCheckedText)")
+                versionText
                     .font(.system(size: 12)).foregroundStyle(.secondary)
             }
             Spacer(minLength: 12)
@@ -76,12 +76,16 @@ struct UpdatesSettingsView: View {
         Binding(get: { settings.updateChannel }, set: { settings.updateChannel = $0 })
     }
 
-    private var lastCheckedText: String {
-        guard let date = UpdaterService.shared.lastUpdateCheckDate else { return "never" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+    /// "Version x · Last checked <date>", with the date in the user's locale.
+    private var versionText: Text {
+        guard let date = UpdaterService.shared.lastUpdateCheckDate else {
+            return Text("Version \(version) · Never checked", comment: "Updates status; argument is the app version")
+        }
+        let checked = date.formatted(date: .abbreviated, time: .shortened)
+        return Text(
+            "Version \(version) · Last checked \(checked)",
+            comment: "Updates status; arguments are the app version and the locale-formatted date of the last check"
+        )
     }
 
     private var version: String {

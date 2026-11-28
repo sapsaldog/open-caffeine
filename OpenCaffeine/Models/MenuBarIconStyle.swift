@@ -9,9 +9,9 @@ enum MenuBarIconStyle: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .coffeeType1: return "Coffee Type 1"
-        case .coffeeType2: return "Coffee Type 2"
-        case .coffeeType3: return "Coffee Type 3"
+        case .coffeeType1: return String(localized: "Coffee Type 1", comment: "Menu bar icon style name")
+        case .coffeeType2: return String(localized: "Coffee Type 2", comment: "Menu bar icon style name")
+        case .coffeeType3: return String(localized: "Coffee Type 3", comment: "Menu bar icon style name")
         }
     }
 }

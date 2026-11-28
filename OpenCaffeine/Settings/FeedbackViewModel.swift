@@ -69,10 +69,12 @@ final class FeedbackViewModel: ObservableObject {
     private func attachmentMessage(rejected: Int, overflow: Int) -> String? {
         var parts: [String] = []
         if rejected > 0 {
-            parts.append("Skipped \(rejected) file(s) — images must be under 10 MB.")
+            parts.append(String(localized: "Skipped \(rejected) file(s) — images must be under 10 MB.",
+                                comment: "Attachment notice; %lld = number of rejected image files"))
         }
         if overflow > 0 {
-            parts.append("You can attach up to \(FeedbackDraft.maxScreenshots) screenshots.")
+            parts.append(String(localized: "You can attach up to \(FeedbackDraft.maxScreenshots) screenshots.",
+                                comment: "Attachment notice; %lld = maximum number of screenshots"))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " ")
     }
@@ -90,6 +92,7 @@ final class FeedbackViewModel: ObservableObject {
 
     private func message(for error: Error) -> String {
         (error as? LocalizedError)?.errorDescription
-            ?? "Something went wrong. Please try again."
+            ?? String(localized: "Something went wrong. Please try again.",
+                      comment: "Generic feedback submission error")
     }
 }

@@ -6,6 +6,9 @@ import UniformTypeIdentifiers
 /// screenshot attachments, submitted to Usero. View shell — excluded from the
 /// coverage gate; logic lives in `FeedbackViewModel` / `Feedback*` types.
 struct FeedbackSettingsView: View {
+    /// Example address shown as the email placeholder; not localized.
+    private static let emailPlaceholder = "you@example.com"
+
     @StateObject private var model: FeedbackViewModel
 
     init(service: FeedbackSubmitting = FeedbackService()) {
@@ -33,7 +36,7 @@ struct FeedbackSettingsView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("How would you rate Open Caffeine?").font(.system(size: 13))
                     FaceRatingRow(selection: model.draft.rating, onSelect: model.selectRating)
-                    Text("Tap a face — 1 to 4.")
+                    Text("Tap a face — 1 to 4.", comment: "Hint under the rating faces")
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -72,7 +75,7 @@ struct FeedbackSettingsView: View {
     private var emailField: some View {
         fieldContainer(title: "Email", caption: "Optional — so we can reply.") {
             VStack(alignment: .leading, spacing: 4) {
-                TextField("you@example.com", text: $model.draft.email)
+                TextField(Self.emailPlaceholder, text: $model.draft.email)
                     .textFieldStyle(.plain)
                     .modifier(InputBackground())
                 if !model.draft.emailIsValid {
@@ -125,8 +128,12 @@ struct FeedbackSettingsView: View {
         VStack(spacing: 8) {
             Button { Task { await model.send() } } label: {
                 HStack(spacing: 6) {
-                    if model.phase == .sending { ProgressView().controlSize(.small) }
-                    Text(model.phase == .sending ? "Sending…" : "Send Feedback")
+                    if model.phase == .sending {
+                        ProgressView().controlSize(.small)
+                        Text("Sending…")
+                    } else {
+                        Text("Send Feedback")
+                    }
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -153,8 +160,9 @@ struct FeedbackSettingsView: View {
 
     private var footer: some View {
         HStack(spacing: 4) {
-            Text("Powered by").font(.system(size: 11)).foregroundStyle(.secondary)
-            Button("Usero") { openUsero() }
+            Text("Powered by", comment: "Footer prefix, followed by the brand name Usero")
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+            Button { openUsero() } label: { Text(verbatim: "Usero") }
                 .buttonStyle(.plain)
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(Color.accentColor)
@@ -165,7 +173,7 @@ struct FeedbackSettingsView: View {
     // MARK: Helpers
 
     private func fieldContainer<Content: View>(
-        title: String, caption: String, @ViewBuilder content: () -> Content
+        title: LocalizedStringKey, caption: LocalizedStringKey, @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {

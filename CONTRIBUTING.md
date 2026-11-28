@@ -60,6 +60,22 @@ See the README's "Coverage" section for the rationale.
 - Hard cap of **500 lines per file** (warning at 400). Split before you hit it.
 - Match the conventions and naming already in the surrounding code.
 
+## Localization
+
+User-facing strings live in the String Catalog
+`OpenCaffeine/Resources/Localizable.xcstrings` (source language: English;
+translations: Ukrainian). Building the app extracts new strings from Swift
+sources into the catalog automatically (`SWIFT_EMIT_LOC_STRINGS`).
+
+- In SwiftUI, string literals passed to `Text`, `Button`, `Toggle`, … and to the
+  `LocalizedStringKey` parameters of the settings components are localized as is.
+- Anywhere a `String` is needed (AppKit alerts, model `displayName`s, error
+  messages), use `String(localized: "…", comment: "…")`.
+- Don't localize log messages, identifiers, or brand names (`Text(verbatim:)`).
+- Add the Ukrainian translation for every new key (use plural variations for
+  counted nouns). Tests run in English (pinned in the scheme), so they keep
+  asserting the English text.
+
 ## Pull requests
 
 1. Fork and branch from `main` (e.g. `fix/...`, `feat/...`, `chore/...`).

@@ -167,12 +167,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alreadyShown: settings.didShowInstructionMessage
         ) else { return }
         let alert = NSAlert()
-        alert.messageText = "Open Caffeine is running in your menubar"
-        alert.informativeText = """
-        Click the coffee icon to start a session.
-        Set a hotkey in Preferences for one-press toggle.
-        """
-        alert.addButton(withTitle: "OK")
+        alert.messageText = String(
+            localized: "Open Caffeine is running in your menubar",
+            comment: "First-launch alert title"
+        )
+        alert.informativeText = String(
+            localized: """
+            Click the coffee icon to start a session.
+            Set a hotkey in Preferences for one-press toggle.
+            """,
+            comment: "First-launch alert body"
+        )
+        alert.addButton(withTitle: String(localized: "OK", comment: "Alert button: dismiss"))
         alert.runModal()
         settings.didShowInstructionMessage = true
     }
