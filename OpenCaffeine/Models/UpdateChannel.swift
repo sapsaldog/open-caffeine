@@ -10,8 +10,8 @@ enum UpdateChannel: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .stable: return "Stable"
-        case .beta: return "Beta"
+        case .stable: return String(localized: "Stable", comment: "Update channel: regular releases")
+        case .beta: return String(localized: "Beta", comment: "Update channel: pre-release builds")
         }
     }
 }

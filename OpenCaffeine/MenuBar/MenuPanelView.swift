@@ -55,7 +55,7 @@ struct MenuPanelView: View {
             Image("AppGlyph")
                 .resizable().frame(width: 26, height: 26)
                 .accessibilityHidden(true)  // decorative: the name is right next to it
-            Text("Open Caffeine").font(.system(size: 15, weight: .semibold))
+            Text(verbatim: "Open Caffeine").font(.system(size: 15, weight: .semibold))
             Spacer()
             StatusPill(active: active)
         }
@@ -82,7 +82,7 @@ struct MenuPanelView: View {
                     .labelsHidden()
             }
 
-            Text(active ? countdownText : "Asleep")
+            heroTitle
                 .font(.macCountdown(26))
                 .foregroundStyle(.primary)
                 .padding(.top, 6)
@@ -93,20 +93,24 @@ struct MenuPanelView: View {
         .padding(.vertical, 14)
     }
 
-    private var countdownText: String {
-        CountdownFormatter.string(remaining: remaining, hideSeconds: settings.hideCountdownSeconds)
+    private var heroTitle: Text {
+        guard active else { return Text("Asleep", comment: "Menu panel: big status when no session runs") }
+        let hideSeconds = settings.hideCountdownSeconds
+        return Text(verbatim: CountdownFormatter.string(remaining: remaining, hideSeconds: hideSeconds))
     }
 
     private var subtitle: String {
-        guard active else { return "Click the cup to stay awake" }
-        return isForever ? "Awake — no time limit" : "remaining · Mac stays awake"
+        guard active else { return String(localized: "Click the cup to stay awake", comment: "Menu panel idle hint") }
+        if isForever { return String(localized: "Awake — no time limit", comment: "Menu panel: Forever subtitle") }
+        return String(localized: "remaining · Mac stays awake", comment: "Menu panel: subtitle under the countdown")
     }
 
     // MARK: Durations
 
     private var durationSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("KEEP AWAKE FOR")
+            Text("Keep awake for", comment: "Menu panel duration section header (shown uppercased)")
+                .textCase(.uppercase)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
@@ -117,7 +121,8 @@ struct MenuPanelView: View {
                         selected: isSelected(duration)
                     ) { tapChip(duration) }
                 }
-                Chip(label: "···", spokenLabel: "Custom duration", selected: false) { dismiss(); onCustom() }
+                let custom = String(localized: "Custom duration", comment: "VoiceOver label of the ··· chip")
+                Chip(label: "···", spokenLabel: custom, selected: false) { dismiss(); onCustom() }
             }
         }
         .padding(.top, 4)
@@ -208,7 +213,7 @@ struct MenuPanelView: View {
             HStack(spacing: 4) {
                 FootButton(icon: "gearshape", title: "Preferences") { dismiss(); onPreferences() }
                 FootButton(icon: "info.circle", title: "About") { dismiss(); onAbout() }
-                Spacer()
+                Spacer(minLength: 0)
                 FootButton(icon: "power", title: "Quit") { dismiss(); onQuit() }
             }
             .padding(.top, 10)
@@ -231,11 +236,15 @@ private struct StatusPill: View {
                 .fill(active ? Color.green : Color.secondary)
                 .frame(width: 7, height: 7)
                 .shadow(color: active ? .green.opacity(0.8) : .clear, radius: 2.5)
-            Text(active ? "Awake" : "Idle").font(.system(size: 11.5, weight: .medium))
+            label.font(.system(size: 11.5, weight: .medium))
         }
         .foregroundStyle(.secondary)
         .padding(.horizontal, 9).frame(height: 22)
         .background(.quaternary, in: Capsule())
+    }
+
+    private var label: Text {
+        active ? Text("Awake", comment: "Status pill: session on") : Text("Idle", comment: "Status pill: session off")
     }
 }
 
@@ -338,9 +347,9 @@ private struct Chip: View {
 /// side; VoiceOver reads the full `spokenTitle`.
 private struct ActionTile: View {
     let icon: String
-    let title: String
-    let spokenTitle: String
-    let help: String
+    let title: LocalizedStringKey
+    let spokenTitle: LocalizedStringKey
+    let help: LocalizedStringKey
     let action: () -> Void
 
     var body: some View {
@@ -366,14 +375,14 @@ private struct ActionTile: View {
 
 private struct FootButton: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let action: () -> Void
     @State private var hovering = false
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon).font(.system(size: 12))
-                Text(title).font(.system(size: 12, weight: .medium))
+                Text(title).font(.system(size: 12, weight: .medium)).lineLimit(1).minimumScaleFactor(0.85)
             }
             .padding(.horizontal, 8).frame(height: 26)
             .foregroundStyle(hovering ? Color.primary : Color.secondary)

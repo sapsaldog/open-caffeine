@@ -95,6 +95,9 @@ struct FaceRatingRow: View {
                     RatingFace(value: value, isSelected: selection == value)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text("Rating \(value) of 4",
+                                         comment: "VoiceOver label of a rating face; %lld = 1…4"))
+                .accessibilityAddTraits(selection == value ? .isSelected : [])
             }
         }
     }

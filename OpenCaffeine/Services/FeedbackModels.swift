@@ -52,19 +52,26 @@ enum FeedbackError: LocalizedError, Equatable {
         switch self {
         case .validation(let detail):
             if let detail {
-                return "Some details look off: \(detail)"
+                return String(localized: "Some details look off: \(detail)",
+                              comment: "Feedback validation error; %@ = detail text from the server")
             }
-            return "Some details look off. Please check and try again."
+            return String(localized: "Some details look off. Please check and try again.",
+                          comment: "Feedback validation error without details")
         case .domainBlocked:
-            return "Feedback isn't accepted from this app right now."
+            return String(localized: "Feedback isn't accepted from this app right now.",
+                          comment: "Feedback error: Usero rejected this app (HTTP 403)")
         case .server:
-            return "Usero ran into a problem. Please try again in a bit."
+            return String(localized: "Usero ran into a problem. Please try again in a bit.",
+                          comment: "Feedback error: Usero server error (HTTP 500)")
         case .unexpected(let code):
-            return "Unexpected response (\(code)). Please try again."
+            return String(localized: "Unexpected response (\(code)). Please try again.",
+                          comment: "Feedback error; %lld = HTTP status code")
         case .network:
-            return "Couldn't reach Usero. Check your connection and try again."
+            return String(localized: "Couldn't reach Usero. Check your connection and try again.",
+                          comment: "Feedback error: network failure")
         case .decoding:
-            return "Usero sent back something unexpected."
+            return String(localized: "Usero sent back something unexpected.",
+                          comment: "Feedback error: response could not be decoded")
         }
     }
 }

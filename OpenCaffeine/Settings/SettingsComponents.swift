@@ -6,9 +6,10 @@ import SwiftUI
 
 /// Uppercase, secondary group caption above a settings group.
 struct SettingsGroupLabel: View {
-    let text: String
+    let text: LocalizedStringKey
     var body: some View {
-        Text(text.uppercased())
+        Text(text)
+            .textCase(.uppercase)
             .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -35,19 +36,30 @@ struct SettingsGroup<Content: View>: View {
 
 /// A grouped row: title (+ optional subtitle) on the left, a trailing control.
 struct SettingsRow<Control: View>: View {
-    private let title: String
-    private let subtitle: String?
+    private let title: LocalizedStringKey
+    private let subtitle: LocalizedStringKey?
     private let first: Bool
     /// True when the control already speaks the row's title (switch rows), so the
     /// row text is hidden from VoiceOver instead of being read twice.
     private let controlSpeaksTitle: Bool
     private let control: Control
 
-    init(_ title: String, subtitle: String? = nil, first: Bool = false, @ViewBuilder control: () -> Control) {
+    init(
+        _ title: LocalizedStringKey,
+        subtitle: LocalizedStringKey? = nil,
+        first: Bool = false,
+        @ViewBuilder control: () -> Control
+    ) {
         self.init(title, subtitle: subtitle, first: first, controlSpeaksTitle: false, control: control())
     }
 
-    fileprivate init(_ title: String, subtitle: String?, first: Bool, controlSpeaksTitle: Bool, control: Control) {
+    fileprivate init(
+        _ title: LocalizedStringKey,
+        subtitle: LocalizedStringKey?,
+        first: Bool,
+        controlSpeaksTitle: Bool,
+        control: Control
+    ) {
         self.title = title
         self.subtitle = subtitle
         self.first = first
@@ -79,7 +91,7 @@ struct SettingsRow<Control: View>: View {
 extension SettingsRow where Control == MacSwitch {
     /// A row whose control is a switch. VoiceOver reads the row as that one
     /// switch: the title is its name and the subtitle its hint.
-    init(_ title: String, subtitle: String? = nil, first: Bool = false, isOn: Binding<Bool>) {
+    init(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, first: Bool = false, isOn: Binding<Bool>) {
         self.init(
             title,
             subtitle: subtitle,
@@ -94,14 +106,14 @@ extension SettingsRow where Control == MacSwitch {
 /// 38×22 pill with a `fill-primary` track that turns accent when on, and an 18pt
 /// white knob that slides 16pt over a .22s curve.
 struct MacSwitch: View {
-    private let title: String
-    private let hint: String?
+    private let title: LocalizedStringKey
+    private let hint: LocalizedStringKey?
     @Binding private var isOn: Bool
 
     /// - Parameters:
     ///   - title: What VoiceOver announces; the visible label is the row text.
     ///   - hint: Extra context VoiceOver reads after the name (the row subtitle).
-    init(_ title: String, hint: String? = nil, isOn: Binding<Bool>) {
+    init(_ title: LocalizedStringKey, hint: LocalizedStringKey? = nil, isOn: Binding<Bool>) {
         self.title = title
         self.hint = hint
         self._isOn = isOn
@@ -136,7 +148,7 @@ struct MacSwitch: View {
             Toggle(title, isOn: $isOn)
                 .toggleStyle(.switch)
                 .labelsHidden()
-                .accessibilityHint(hint ?? "")
+                .accessibilityHint(hint.map { Text($0) } ?? Text(verbatim: ""))
         }
     }
 }

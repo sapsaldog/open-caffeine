@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Ukrainian localization. The app follows the macOS language setting (System
+  Settings → General → Language & Region).
+
 ## [1.1.0] - 2026-11-25
 
 ### Added

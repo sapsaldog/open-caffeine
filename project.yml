@@ -1,6 +1,7 @@
 name: OpenCaffeine
 options:
   bundleIdPrefix: com.opencaffeine
+  developmentLanguage: en
   deploymentTarget:
     macOS: "26.0"
   createIntermediateGroups: true
@@ -42,6 +43,9 @@ targets:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_MODULE_NAME: OpenCaffeine
+        # Extract localizable strings from Swift sources into Localizable.xcstrings.
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
     info:
       path: OpenCaffeine/Info.plist
       properties:
@@ -124,6 +128,10 @@ schemes:
         OpenCaffeineTests: [test]
     test:
       gatherCoverageData: true
+      # Tests assert English UI strings; pin the language so they pass on
+      # machines whose system language is one of the app's localizations.
+      language: en
+      region: US
       coverageTargets:
         - OpenCaffeine
       targets:

@@ -24,6 +24,7 @@ Built for Apple Silicon and macOS 26 (Tahoe) or newer with a native Liquid Glass
 - Optional battery threshold that stops an active session
 - Launch-at-login, Dock visibility, appearance, and menu-bar icon preferences
 - EdDSA-verified automatic updates through Sparkle
+- Localized in English and Ukrainian
 
 ## Install
 

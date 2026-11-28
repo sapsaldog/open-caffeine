@@ -17,13 +17,20 @@ enum CaffeineDuration: Equatable, Hashable {
 
     var displayName: String {
         switch self {
-        case .forever: return "Forever"
-        case .minutes(let minutes): return "\(minutes) min"
-        case .hours(1): return "1 hour"
-        case .hours(let hours): return "\(hours) hours"
+        case .forever:
+            return String(localized: "Forever", comment: "Session duration with no time limit")
+        case .minutes(let minutes):
+            return String(localized: "\(minutes) min", comment: "Session duration in minutes, e.g. 5 min")
+        case .hours(1):
+            return String(localized: "1 hour", comment: "Session duration of exactly one hour")
+        case .hours(let hours):
+            return String(localized: "\(hours) hours", comment: "Session duration in hours (2 or more), e.g. 12 hours")
         case .custom(let seconds):
             let minutes = Int(seconds / 60)
-            return "Custom (\(minutes) min)"
+            return String(
+                localized: "Custom (\(minutes) min)",
+                comment: "User-chosen session duration, shown with its length in minutes"
+            )
         }
     }
 
@@ -31,8 +38,10 @@ enum CaffeineDuration: Equatable, Hashable {
     var chipLabel: String {
         switch self {
         case .forever: return "∞"
-        case .minutes(let minutes): return "\(minutes)m"
-        case .hours(let hours): return "\(hours)h"
+        case .minutes(let minutes):
+            return String(localized: "\(minutes)m", comment: "Compact duration chip in minutes, e.g. 5m; keep it short")
+        case .hours(let hours):
+            return String(localized: "\(hours)h", comment: "Compact duration chip in hours, e.g. 1h; keep it short")
         case .custom: return "···"
         }
     }

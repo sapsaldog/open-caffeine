@@ -1,0 +1,1484 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld days" : {
+      "comment" : "Longest custom duration in days, shown in parentheses: (7 days)",
+      "localizations" : {
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld дні"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld днів"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld день"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld дня"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld hours" : {
+      "comment" : "Session duration in hours (2 or more), e.g. 12 hours",
+      "localizations" : {
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld години"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld годин"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld година"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld години"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld min" : {
+      "comment" : "Session duration in minutes, e.g. 5 min",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld хв"
+          }
+        }
+      }
+    },
+    "%lldh" : {
+      "comment" : "Compact duration chip in hours, e.g. 1h; keep it short",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld год"
+          }
+        }
+      }
+    },
+    "%lldm" : {
+      "comment" : "Compact duration chip in minutes, e.g. 5m; keep it short",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld хв"
+          }
+        }
+      }
+    },
+    "1 hour" : {
+      "comment" : "Session duration of exactly one hour",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 година"
+          }
+        }
+      }
+    },
+    "1 to %@ (%@)" : {
+      "comment" : "Allowed custom duration range in minutes, e.g. 1 to 10,080 (7 days)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "1 to %1$@ (%2$@)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "від 1 до %@ (%@)"
+          }
+        }
+      }
+    },
+    "About" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Інформація"
+          }
+        }
+      }
+    },
+    "Activate with hot key" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вмикати клавіатурним скороченням"
+          }
+        }
+      }
+    },
+    "Activate with hot key:" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вмикати клавіатурним скороченням:"
+          }
+        }
+      }
+    },
+    "Allow Open Caffeine in System Settings to finish setting this up." : {
+      "comment" : "Lid-closed caption: the privileged helper still needs approval in Login Items",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозвольте Open Caffeine у Системних параметрах, щоб завершити налаштування."
+          }
+        }
+      }
+    },
+    "Allow sleep if battery gets below" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозволяти режим сну, якщо заряд нижчий за"
+          }
+        }
+      }
+    },
+    "An open-source menu-bar app that keeps your Mac awake for as long as you need." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Програма з відкритим кодом для смуги меню, з якою ваш Mac не засинає стільки, скільки вам потрібно."
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вигляд"
+          }
+        }
+      }
+    },
+    "Asleep" : {
+      "comment" : "Menu panel: big status when no session runs",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сон"
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "comment" : "Appearance mode: follow the system Light/Dark setting",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Авто"
+          }
+        }
+      }
+    },
+    "Auto follows your macOS Light & Dark setting." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режим «Авто» відповідає налаштуванню вигляду macOS."
+          }
+        }
+      }
+    },
+    "Automatic Updates" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматичні оновлення"
+          }
+        }
+      }
+    },
+    "Automatically check for updates" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматично перевіряти наявність оновлень"
+          }
+        }
+      }
+    },
+    "Awake" : {
+      "comment" : "Status pill: session on",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активно"
+          }
+        }
+      }
+    },
+    "Awake — no time limit" : {
+      "comment" : "Menu panel: Forever subtitle",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активно — без обмеження часу"
+          }
+        }
+      }
+    },
+    "Battery" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Акумулятор"
+          }
+        }
+      }
+    },
+    "Beta" : {
+      "comment" : "Update channel: pre-release builds",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бета"
+          }
+        }
+      }
+    },
+    "Beta builds may be less stable." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бета-версії можуть бути менш стабільними."
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "comment" : "Custom duration prompt: dismiss\nLid mode alert: dismiss",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скасувати"
+          }
+        }
+      }
+    },
+    "Check Now" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірити зараз"
+          }
+        }
+      }
+    },
+    "Choose Image…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати зображення…"
+          }
+        }
+      }
+    },
+    "Click the coffee icon to start a session.\nSet a hotkey in Preferences for one-press toggle." : {
+      "comment" : "First-launch alert body",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клацніть піктограму чашки кави, щоб почати сеанс.\nПризначте клавіатурне скорочення в Параметрах, щоб вмикати й вимикати одним натисканням."
+          }
+        }
+      }
+    },
+    "Click the cup to stay awake" : {
+      "comment" : "Menu panel idle hint",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клацніть чашку, щоб Mac не засинав"
+          }
+        }
+      }
+    },
+    "Closing the lid will put your Mac to sleep." : {
+      "comment" : "Lid-closed caption: appended after a 'Paused — …' reason",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закриття кришки переведе ваш Mac у режим сну."
+          }
+        }
+      }
+    },
+    "Coffee Type 1" : {
+      "comment" : "Menu bar icon style name",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кава, тип 1"
+          }
+        }
+      }
+    },
+    "Coffee Type 2" : {
+      "comment" : "Menu bar icon style name",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кава, тип 2"
+          }
+        }
+      }
+    },
+    "Coffee Type 3" : {
+      "comment" : "Menu bar icon style name",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кава, тип 3"
+          }
+        }
+      }
+    },
+    "Comment" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Коментар"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "comment" : "Lid mode alert: go on to the approval",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продовжити"
+          }
+        }
+      }
+    },
+    "Couldn't keep your Mac awake with the lid closed." : {
+      "comment" : "Lid-closed caption: the helper failed to block lid-close sleep",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося запобігти сну Mac із закритою кришкою."
+          }
+        }
+      }
+    },
+    "Couldn't let your Mac sleep again yet — retrying." : {
+      "comment" : "Lid-closed caption: re-enabling sleep failed and will be retried",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поки не вдалося відновити режим сну — пробуємо ще раз."
+          }
+        }
+      }
+    },
+    "Couldn't reach Usero. Check your connection and try again." : {
+      "comment" : "Feedback error: network failure",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося зв’язатися з Usero. Перевірте підключення до мережі й спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "Countdown" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зворотний відлік"
+          }
+        }
+      }
+    },
+    "Created by Hoon Choi\nReleased under the MIT License" : {
+      "comment" : "About window credits; keep the person's name in Latin script",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автор: Hoon Choi\nПоширюється за ліцензією MIT"
+          }
+        }
+      }
+    },
+    "Custom (%lld min)" : {
+      "comment" : "User-chosen session duration, shown with its length in minutes",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Власна (%lld хв)"
+          }
+        }
+      }
+    },
+    "Custom Duration" : {
+      "comment" : "Custom duration prompt title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Власна тривалість"
+          }
+        }
+      }
+    },
+    "Custom duration" : {
+      "comment" : "VoiceOver label of the ··· chip",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Власна тривалість"
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "comment" : "Appearance mode: always dark",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Темний"
+          }
+        }
+      }
+    },
+    "Default duration" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тривалість за замовчуванням"
+          }
+        }
+      }
+    },
+    "Disabled" : {
+      "comment" : "Battery threshold value: low-battery auto-stop is off",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнено"
+          }
+        }
+      }
+    },
+    "Display" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дисплей"
+          }
+        }
+      }
+    },
+    "Display Off" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнути екран"
+          }
+        }
+      }
+    },
+    "Duration & Battery" : {
+      "comment" : "Settings page title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Таймер і акумулятор"
+          }
+        }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Електронна пошта"
+          }
+        }
+      }
+    },
+    "Enter a whole number of minutes from %@." : {
+      "comment" : "Custom duration prompt text after invalid input; the argument is the allowed range",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть ціле число хвилин %@."
+          }
+        }
+      }
+    },
+    "Feedback" : {
+      "comment" : "Settings page title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відгук"
+          }
+        }
+      }
+    },
+    "Feedback isn't accepted from this app right now." : {
+      "comment" : "Feedback error: Usero rejected this app (HTTP 403)",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наразі відгуки з цієї програми не приймаються."
+          }
+        }
+      }
+    },
+    "Forever" : {
+      "comment" : "Session duration with no time limit",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без обмежень"
+          }
+        }
+      }
+    },
+    "General" : {
+      "comment" : "Settings page title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загальні"
+          }
+        }
+      }
+    },
+    "Hide seconds in countdown" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приховувати секунди у зворотному відліку"
+          }
+        }
+      }
+    },
+    "How many minutes should Open Caffeine keep your Mac awake? Enter %@." : {
+      "comment" : "Custom duration prompt text; the argument is the allowed range",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скільки хвилин Open Caffeine не даватиме вашому Mac заснути? Введіть число %@."
+          }
+        }
+      }
+    },
+    "How would you rate Open Caffeine?" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Як би ви оцінили Open Caffeine?"
+          }
+        }
+      }
+    },
+    "Idle" : {
+      "comment" : "Status pill: session off",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неактивно"
+          }
+        }
+      }
+    },
+    "Keep awake for" : {
+      "comment" : "Menu panel duration section header (shown uppercased)",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не засинати протягом"
+          }
+        }
+      }
+    },
+    "Keep display awake" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вимикати дисплей"
+          }
+        }
+      }
+    },
+    "Keep the screen on" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вимикати екран"
+          }
+        }
+      }
+    },
+    "Keep your Mac awake with the lid closed?" : {
+      "comment" : "Title of the alert that explains lid mode before its one-time approval",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не давати вашому Mac засинати із закритою кришкою?"
+          }
+        }
+      }
+    },
+    "License" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ліцензія"
+          }
+        }
+      }
+    },
+    "Lid mode isn't available in this build" : {
+      "comment" : "Alert title when the lid mode helper can't be registered",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Режим із закритою кришкою недоступний у цій збірці"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "comment" : "Appearance mode: always light",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Світлий"
+          }
+        }
+      }
+    },
+    "Menu Bar" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Смуга меню"
+          }
+        }
+      }
+    },
+    "Menu bar icon" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Піктограма в смузі меню"
+          }
+        }
+      }
+    },
+    "No battery detected." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Акумулятор не виявлено."
+          }
+        }
+      }
+    },
+    "OK" : {
+      "comment" : "Alert button: dismiss",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "On battery power, Open Caffeine steps aside so your Mac can sleep and protect its charge." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Під час живлення від акумулятора Open Caffeine не заважає вашому Mac перейти в режим сну, щоб зберегти заряд."
+          }
+        }
+      }
+    },
+    "Open Caffeine checks once a day in the background." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Caffeine перевіряє раз на день у фоновому режимі."
+          }
+        }
+      }
+    },
+    "Open Caffeine couldn't set up its helper. This needs a signed build of the app." : {
+      "comment" : "Alert body when the lid mode helper can't be registered",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося налаштувати допоміжний інструмент Open Caffeine. Для цього потрібна підписана збірка програми."
+          }
+        }
+      }
+    },
+    "Open Caffeine is running in your menubar" : {
+      "comment" : "First-launch alert title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Caffeine працює в смузі меню"
+          }
+        }
+      }
+    },
+    "Open Caffeine is up to date" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У вас найновіша версія Open Caffeine"
+          }
+        }
+      }
+    },
+    "Open Caffeine needs a one-time approval in System Settings. It only applies while a session is running, and stops automatically below %lld%% battery or if your Mac gets hot.\n\nDon't put your Mac in a bag while it's awake. It can overheat." : {
+      "comment" : "Body of the lid mode alert; the argument is the minimum battery percentage",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Caffeine потребує одноразового дозволу в Системних параметрах. Цей режим діє лише під час сеансу й автоматично вимикається, якщо заряд акумулятора нижчий за %lld%% або ваш Mac нагрівається.\n\nНе кладіть Mac у сумку, поки він не спить, — він може перегрітися."
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Необов’язково"
+          }
+        }
+      }
+    },
+    "Optional — attach what you're looking at." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Необов’язково — додайте те, що бачите."
+          }
+        }
+      }
+    },
+    "Optional — so we can reply." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Необов’язково — щоб ми могли відповісти."
+          }
+        }
+      }
+    },
+    "Paused — battery is below %lld%%. %@" : {
+      "comment" : "Lid-closed caption: %lld is the battery percent; %@ is 'Closing the lid will put your Mac…'",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Paused — battery is below %1$lld%%. %2$@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Призупинено — заряд акумулятора нижчий за %lld%%. %@"
+          }
+        }
+      }
+    },
+    "Paused — your Mac is too hot. %@" : {
+      "comment" : "Lid-closed caption: %@ is 'Closing the lid will put your Mac to sleep.'",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Призупинено — ваш Mac перегрівся. %@"
+          }
+        }
+      }
+    },
+    "Powered by" : {
+      "comment" : "Footer prefix, followed by the brand name Usero",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Працює на"
+          }
+        }
+      }
+    },
+    "Preferences" : {
+      "comment" : "Settings window title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Параметри"
+          }
+        }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вийти"
+          }
+        }
+      }
+    },
+    "Rating %lld of 4" : {
+      "comment" : "VoiceOver label of a rating face; %lld = 1…4",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оцінка %lld з 4"
+          }
+        }
+      }
+    },
+    "Receive updates from" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отримувати оновлення з каналу"
+          }
+        }
+      }
+    },
+    "Screensaver" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заставка"
+          }
+        }
+      }
+    },
+    "Screenshot" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Знімок екрана"
+          }
+        }
+      }
+    },
+    "Send Feedback" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати відгук"
+          }
+        }
+      }
+    },
+    "Sending…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надсилання…"
+          }
+        }
+      }
+    },
+    "Show countdown next to the menu-bar icon" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати відлік біля піктограми в смузі меню"
+          }
+        }
+      }
+    },
+    "Show icon in Dock" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати піктограму в Dock"
+          }
+        }
+      }
+    },
+    "Show instruction message when Open Caffeine opens" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати інструкцію під час відкриття Open Caffeine"
+          }
+        }
+      }
+    },
+    "Shows the remaining time as hours:minutes." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показує час, що залишився, у форматі години:хвилини."
+          }
+        }
+      }
+    },
+    "Skipped %lld file(s) — images must be under 10 MB." : {
+      "comment" : "Attachment notice; %lld = number of rejected image files",
+      "localizations" : {
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Пропущено %lld файли — зображення мають бути менші за 10 МБ."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Пропущено %lld файлів — зображення мають бути менші за 10 МБ."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Пропущено %lld файл — зображення мають бути менші за 10 МБ."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Пропущено %lld файлу — зображення мають бути менші за 10 МБ."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Some details look off. Please check and try again." : {
+      "comment" : "Feedback validation error without details",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Деякі дані некоректні. Перевірте їх і спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "Some details look off: %@" : {
+      "comment" : "Feedback validation error; %@ = detail text from the server",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Деякі дані некоректні: %@"
+          }
+        }
+      }
+    },
+    "Something went wrong. Please try again." : {
+      "comment" : "Generic feedback submission error",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Щось пішло не так. Спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "Stable" : {
+      "comment" : "Update channel: regular releases",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стабільний"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "comment" : "Custom duration prompt: start the session",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почати"
+          }
+        }
+      }
+    },
+    "Start Screensaver" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнути заставку"
+          }
+        }
+      }
+    },
+    "Start at login" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкривати під час входу"
+          }
+        }
+      }
+    },
+    "Starts the screen saver." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вмикає заставку."
+          }
+        }
+      }
+    },
+    "Startup & Visibility" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запуск і видимість"
+          }
+        }
+      }
+    },
+    "Stay awake" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не засинати"
+          }
+        }
+      }
+    },
+    "Stay awake with lid closed" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не засинати із закритою кришкою"
+          }
+        }
+      }
+    },
+    "Tap a face — 1 to 4." : {
+      "comment" : "Hint under the rating faces",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виберіть смайлик — від 1 до 4."
+          }
+        }
+      }
+    },
+    "Tell Us More" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розкажіть більше"
+          }
+        }
+      }
+    },
+    "Thanks for the feedback!" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дякуємо за відгук!"
+          }
+        }
+      }
+    },
+    "That doesn't look like a valid email." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Схоже, це недійсна електронна адреса."
+          }
+        }
+      }
+    },
+    "The coffee cup shown in the menu bar." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чашка кави, що відображається в смузі меню."
+          }
+        }
+      }
+    },
+    "Turn Display Off" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнути екран"
+          }
+        }
+      }
+    },
+    "Turns the display off now. Your Mac keeps running." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Негайно вимикає екран. Ваш Mac продовжує працювати."
+          }
+        }
+      }
+    },
+    "Unexpected response (%lld). Please try again." : {
+      "comment" : "Feedback error; %lld = HTTP status code",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неочікувана відповідь (%lld). Спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "Update Channel" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Канал оновлень"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "comment" : "Settings page title",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оновлення"
+          }
+        }
+      }
+    },
+    "Used when you activate with the hot key." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Використовується під час увімкнення клавіатурним скороченням."
+          }
+        }
+      }
+    },
+    "Usero ran into a problem. Please try again in a bit." : {
+      "comment" : "Feedback error: Usero server error (HTTP 500)",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У Usero виникла проблема. Спробуйте ще раз трохи згодом."
+          }
+        }
+      }
+    },
+    "Usero sent back something unexpected." : {
+      "comment" : "Feedback error: response could not be decoded",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usero надіслав неочікувану відповідь."
+          }
+        }
+      }
+    },
+    "Version %@" : {
+      "comment" : "Settings sidebar; argument is the app version",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія %@"
+          }
+        }
+      }
+    },
+    "Version %@ (%@)" : {
+      "comment" : "About window; version and build number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія %@ (%@)"
+          }
+        }
+      }
+    },
+    "Version %@ · Last checked %@" : {
+      "comment" : "Updates status; arguments are the app version and the locale-formatted date of the last check",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ · Last checked %2$@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія %@ · Остання перевірка: %@"
+          }
+        }
+      }
+    },
+    "Version %@ · Never checked" : {
+      "comment" : "Updates status; argument is the app version",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія %@ · Ще не перевірено"
+          }
+        }
+      }
+    },
+    "View on GitHub" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переглянути на GitHub"
+          }
+        }
+      }
+    },
+    "What's working well? What would you change?" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Що вам подобається? Що б ви змінили?"
+          }
+        }
+      }
+    },
+    "When off, the Mac stays awake but the display is allowed to sleep." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Якщо вимкнено, Mac не засинає, але дисплей може перейти в режим сну."
+          }
+        }
+      }
+    },
+    "You can attach up to %lld screenshots." : {
+      "comment" : "Attachment notice; %lld = maximum number of screenshots",
+      "localizations" : {
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Можна додати щонайбільше %lld знімки екрана."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Можна додати щонайбільше %lld знімків екрана."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Можна додати щонайбільше %lld знімок екрана."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Можна додати щонайбільше %lld знімка екрана."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your Rating" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваша оцінка"
+          }
+        }
+      }
+    },
+    "remaining · Mac stays awake" : {
+      "comment" : "Menu panel: subtitle under the countdown",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "залишилося · Mac не засинає"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -27,7 +27,7 @@ final class PreferencesWindowController {
             rootView: PreferencesScene(onDockVisibilityChange: onDockVisibilityChange)
         )
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Preferences"
+        window.title = String(localized: "Preferences", comment: "Settings window title")
         window.styleMask = [.titled, .closable, .fullSizeContentView]
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
